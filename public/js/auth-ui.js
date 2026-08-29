@@ -29,6 +29,17 @@ class OneHealthAuth {
   }
 
   closeModal() {
+    // Don't allow closing modal if user is not authenticated (auth gate)
+    if (!window.oneHealthSupabase || !window.oneHealthSupabase.isAuthenticated()) {
+      // shake the card to signal it cannot be dismissed
+      const card = document.getElementById('authModalCard');
+      if (card) {
+        card.style.animation = 'none';
+        card.offsetHeight; // reflow
+        card.style.animation = 'shakeError 0.35s ease';
+      }
+      return;
+    }
     const m = document.getElementById('authModal');
     if (m) m.style.display = 'none';
   }
@@ -51,6 +62,13 @@ class OneHealthAuth {
   _render() {
     const body = document.getElementById('authModalBody');
     if (!body) return;
+
+    // Toggle close button visibility based on whether the user is logged in
+    const closeBtn = document.getElementById('authModalCloseBtn');
+    if (closeBtn) {
+      const isAuth = window.oneHealthSupabase && window.oneHealthSupabase.isAuthenticated();
+      closeBtn.style.display = isAuth ? 'flex' : 'none';
+    }
 
     const isSignIn = this._activeTab === 'signin';
     const role     = this._signupRole;
@@ -385,9 +403,14 @@ class OneHealthAuth {
       window.oneHealthApp.userRole = 'patient';
       window.oneHealthApp.currentAuthUser = null;
       localStorage.removeItem('onehealth_user_role');
+      localStorage.removeItem('onehealth_auth_user');
       window.oneHealthApp.applyUserRole('patient', false);
-      window.oneHealthApp.showToast('Signed out successfully');
     }
+    // Re-show auth gate — user must sign in again
+    this._activeTab = 'signin';
+    this._render();
+    const m = document.getElementById('authModal');
+    if (m) m.style.display = 'flex';
   }
 
   // =========================================================================
@@ -417,25 +440,46 @@ class OneHealthAuth {
   // =========================================================================
 
   init() {
-    // Register for auth state changes
+    // Register for auth state changes from Supabase
     window.oneHealthSupabase.onAuthChange((event, user) => {
-      if (event === 'SIGNED_IN' && user) {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && user) {
+        // User is authenticated — close gate, update header, set role
+        const m = document.getElementById('authModal');
+        if (m) m.style.display = 'none';
         this._updateHeaderUI(user);
         if (window.oneHealthApp) {
           window.oneHealthApp.setUserRoleFromAuth(user.role, user);
+          window.oneHealthApp.showToast(`Welcome back, ${user.name || 'User'} 👋`);
         }
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === 'SIGNED_OUT' || event === 'NO_SESSION') {
+        // Not authenticated — enforce auth gate
         this._updateHeaderUI(null);
+        this._activeTab = 'signin';
+        this._render();
+        const m = document.getElementById('authModal');
+        if (m) m.style.display = 'flex';
       }
     });
 
-    // Restore cached session header immediately (before async resolve)
+    // Check for cached session immediately (instant UI, before async Supabase resolves)
     const cached = localStorage.getItem('onehealth_auth_user');
     if (cached) {
       try {
         const user = JSON.parse(cached);
+        // Cached user — show app immediately, Supabase will verify in background
         this._updateHeaderUI(user);
-      } catch (e) {}
+        if (window.oneHealthApp) {
+          window.oneHealthApp.setUserRoleFromAuth(user.role, user);
+        }
+      } catch (e) {
+        localStorage.removeItem('onehealth_auth_user');
+      }
+    } else {
+      // No cache — show auth gate immediately while Supabase checks
+      this._activeTab = 'signin';
+      this._render();
+      const m = document.getElementById('authModal');
+      if (m) m.style.display = 'flex';
     }
 
     // Initial render so modal body is ready

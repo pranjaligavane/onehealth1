@@ -72,6 +72,10 @@ class OneHealthSupabaseClient {
       if (session) {
         this.session = session;
         await this._loadUserProfile(session.user);
+        this._notifyListeners('SIGNED_IN', this.currentUser);
+      } else {
+        // No active session — fire event so app can show auth gate
+        this._notifyListeners('NO_SESSION', null);
       }
       // Listen for future auth changes
       this.client.auth.onAuthStateChange(async (event, sess) => {
@@ -86,6 +90,8 @@ class OneHealthSupabaseClient {
       });
     } catch (err) {
       console.warn('[SupabaseClient] Session restore error:', err);
+      // On error treat as no session
+      this._notifyListeners('NO_SESSION', null);
     }
   }
 
