@@ -2,7 +2,7 @@
  * ONEHEALTH AI - Main Application Controller (Role-Aware Architecture)
  * Supports Patient / Citizen, Medical Doctor (MBBS), and Veterinary Doctor (BVSc).
  * Features autonomous offline AI, local IndexedDB persistence, Doctor Location matching,
- * and seamless PWA workflows.
+ * and comprehensive real-time multilingual translation across all pages.
  */
 
 class OneHealthApp {
@@ -38,7 +38,7 @@ class OneHealthApp {
 
     // 5. Apply User Role
     if (!this.userRole) {
-      this.userRole = 'patient'; // default to patient view with direct hero choice buttons
+      this.userRole = 'patient';
     }
     this.applyUserRole(this.userRole, false);
 
@@ -56,7 +56,10 @@ class OneHealthApp {
   // =========================================================================
   openRoleModal() {
     const modal = document.getElementById('roleSelectionModal');
-    if (modal) modal.style.display = 'flex';
+    if (modal) {
+      window.oneHealthI18n.applyTranslations();
+      modal.style.display = 'flex';
+    }
   }
 
   closeRoleModal() {
@@ -69,7 +72,7 @@ class OneHealthApp {
     localStorage.setItem('onehealth_user_role', role);
     this.closeRoleModal();
     this.applyUserRole(role, true);
-    this.showToast(`Switched to ${role === 'doctor' ? 'Medical Doctor' : role === 'vet' ? 'Veterinary Doctor' : 'Patient / Citizen'} Mode`);
+    this.showToast(`${window.oneHealthI18n.t(role === 'doctor' ? 'role_doctor' : role === 'vet' ? 'role_vet' : 'role_patient')}`);
   }
 
   applyUserRole(role, navigate = true) {
@@ -79,16 +82,16 @@ class OneHealthApp {
 
     if (role === 'doctor') {
       if (roleIcon) roleIcon.innerText = '🩺';
-      if (roleText) roleText.innerText = 'Doctor (MBBS)';
-      if (subtitle) subtitle.innerText = 'Doctor Clinical Tele-Station';
+      if (roleText) roleText.innerText = window.oneHealthI18n.t('role_doctor');
+      if (subtitle) subtitle.innerText = window.oneHealthI18n.t('portal_title');
     } else if (role === 'vet') {
       if (roleIcon) roleIcon.innerText = '🐄';
-      if (roleText) roleText.innerText = 'Vet (BVSc)';
-      if (subtitle) subtitle.innerText = 'Veterinary Officer Station';
+      if (roleText) roleText.innerText = window.oneHealthI18n.t('role_vet');
+      if (subtitle) subtitle.innerText = window.oneHealthI18n.t('cat_livestock');
     } else {
       if (roleIcon) roleIcon.innerText = '👤';
-      if (roleText) roleText.innerText = 'Patient / Citizen';
-      if (subtitle) subtitle.innerText = 'Rural Health & Vet Network';
+      if (roleText) roleText.innerText = window.oneHealthI18n.t('role_patient');
+      if (subtitle) subtitle.innerText = window.oneHealthI18n.t('app_subtitle');
     }
 
     this.renderBottomNavigation(role);
@@ -106,66 +109,67 @@ class OneHealthApp {
     const nav = document.getElementById('appBottomNav');
     if (!nav) return;
 
+    const t = (k) => window.oneHealthI18n.t(k);
+
     if (role === 'doctor') {
       nav.innerHTML = `
         <button class="nav-item" data-view="portal" onclick="window.oneHealthApp.navigateTo('portal')">
           <span class="nav-icon">👨‍⚕️</span>
-          <span>Triage Queue</span>
+          <span>${t('nav_portal')}</span>
         </button>
         <button class="nav-item" data-view="cases" onclick="window.oneHealthApp.navigateTo('cases')">
           <span class="nav-icon">📂</span>
-          <span>All Cases</span>
+          <span>${t('nav_cases')}</span>
         </button>
         <button class="nav-item" data-view="clinic_profile" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
           <span class="nav-icon">📍</span>
-          <span>My Profile</span>
+          <span>${t('nav_clinic_profile')}</span>
         </button>
         <button class="nav-item" data-view="analytics" onclick="window.oneHealthApp.navigateTo('analytics')">
           <span class="nav-icon">📊</span>
-          <span>Epidemics</span>
+          <span>${t('nav_analytics')}</span>
         </button>
       `;
     } else if (role === 'vet') {
       nav.innerHTML = `
         <button class="nav-item" data-view="portal" onclick="window.oneHealthApp.navigateTo('portal')">
           <span class="nav-icon">🐄</span>
-          <span>Herd Triage</span>
+          <span>${t('nav_portal')}</span>
         </button>
         <button class="nav-item" data-view="cases" onclick="window.oneHealthApp.navigateTo('cases')">
           <span class="nav-icon">📂</span>
-          <span>Livestock Cases</span>
+          <span>${t('nav_cases')}</span>
         </button>
         <button class="nav-item" data-view="clinic_profile" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
           <span class="nav-icon">📍</span>
-          <span>Dispensary</span>
+          <span>${t('nav_clinic_profile')}</span>
         </button>
         <button class="nav-item" data-view="analytics" onclick="window.oneHealthApp.navigateTo('analytics')">
           <span class="nav-icon">📊</span>
-          <span>Epizootics</span>
+          <span>${t('nav_analytics')}</span>
         </button>
       `;
     } else {
-      // Patient / Citizen / Health Worker
       nav.innerHTML = `
         <button class="nav-item" data-view="home" onclick="window.oneHealthApp.navigateTo('home')">
           <span class="nav-icon">🏠</span>
-          <span data-i18n="nav_home">Home</span>
+          <span>${t('nav_home')}</span>
         </button>
         <button class="nav-item" data-view="screen" onclick="window.oneHealthApp.navigateTo('screen')">
           <span class="nav-icon">➕</span>
-          <span data-i18n="nav_screen">Screen</span>
+          <span>${t('nav_screen')}</span>
         </button>
         <button class="nav-item" data-view="doctors" onclick="window.oneHealthApp.navigateTo('doctors')">
           <span class="nav-icon">📍</span>
-          <span>Find Doctors</span>
+          <span>${t('nav_doctors')}</span>
         </button>
         <button class="nav-item" data-view="cases" onclick="window.oneHealthApp.navigateTo('cases')">
           <span class="nav-icon">📂</span>
-          <span data-i18n="nav_cases">Records</span>
+          <span>${t('nav_cases')}</span>
         </button>
         <button class="nav-item" data-view="analytics" onclick="window.oneHealthApp.navigateTo('analytics')">
           <span class="nav-icon">📊</span>
-          <span data-i18n="nav_analytics">Alerts</span>
+          <span>${t('nav_analytics')}</span>
         </button>
       `;
     }
@@ -189,6 +193,8 @@ class OneHealthApp {
       window.scrollTo(0, 0);
     }
 
+    window.oneHealthI18n.applyTranslations();
+
     if (viewId === 'cases') {
       this.loadCasesList();
     } else if (viewId === 'portal') {
@@ -209,8 +215,12 @@ class OneHealthApp {
     if (langSelect) {
       langSelect.value = window.oneHealthI18n.currentLang;
       langSelect.addEventListener('change', (e) => {
-        window.oneHealthI18n.setLanguage(e.target.value);
-        if (this.currentView === 'screen') this.renderScreeningForm();
+        const newLang = e.target.value;
+        window.oneHealthI18n.setLanguage(newLang);
+        this.applyUserRole(this.userRole, false);
+        window.oneHealthI18n.applyTranslations();
+        this.navigateTo(this.currentView);
+        this.showToast(newLang === 'mr' ? 'भाषा मराठी निवडली' : newLang === 'hi' ? 'भाषा हिंदी चुनी गई' : 'Language set to English');
       });
     }
 
@@ -284,13 +294,16 @@ class OneHealthApp {
     const container = document.getElementById('doctorsListContainer');
     if (!container) return;
 
+    const t = (k) => window.oneHealthI18n.t(k);
+    const lang = window.oneHealthI18n.currentLang;
+
     const villageFilter = document.getElementById('doctorVillageFilter') ? document.getElementById('doctorVillageFilter').value : '';
     const roleFilter = document.getElementById('doctorRoleFilter') ? document.getElementById('doctorRoleFilter').value : '';
     
     let docs = await window.oneHealthDB.getNearbyDoctors(villageFilter, roleFilter || null);
 
     if (docs.length === 0) {
-      container.innerHTML = `<p class="text-muted" style="text-align:center; padding:30px;">No registered healthcare or veterinary facilities found matching your criteria.</p>`;
+      container.innerHTML = `<p class="text-muted" style="text-align:center; padding:30px;">${lang === 'mr' ? 'कोणतेही दवाखाने आढळले नाहीत.' : lang === 'hi' ? 'कोई क्लिनिक नहीं मिला।' : 'No registered healthcare or veterinary facilities found matching your criteria.'}</p>`;
       return;
     }
 
@@ -298,8 +311,14 @@ class OneHealthApp {
       const isVet = doc.role === 'vet';
       const icon = isVet ? '🐄' : '🩺';
       const badgeClass = isVet ? 'badge-green' : 'badge-yellow';
+      const isFree = (doc.consultation_fee || '').toLowerCase().includes('free') || (doc.consultation_fee || '').includes('मोफत') || (doc.consultation_fee || '').includes('निःशुल्क');
 
-      const isFree = (doc.consultation_fee || '').toLowerCase().includes('free');
+      const labelHospital = lang === 'mr' ? '🏥 दवाखाना / रुग्णालय:' : lang === 'hi' ? '🏥 अस्पताल / क्लिनिक:' : '🏥 Hospital / Clinic:';
+      const labelAddress = lang === 'mr' ? '📍 पत्ता:' : lang === 'hi' ? '📍 पता:' : '📍 Address:';
+      const labelTimings = lang === 'mr' ? '🕒 वेळ:' : lang === 'hi' ? '🕒 समय:' : '🕒 OPD Timings:';
+      const labelLanguages = lang === 'mr' ? '🗣️ भाषा:' : lang === 'hi' ? '🗣️ भाषाएं:' : '🗣️ Languages:';
+      const labelSpecialization = lang === 'mr' ? '🔬 विशेष तज्ज्ञता:' : lang === 'hi' ? '🔬 विशेषज्ञता:' : '🔬 Specialization:';
+      const labelFacilities = lang === 'mr' ? '🛠️ उपलब्ध सुविधा:' : lang === 'hi' ? '🛠️ सुविधाएं:' : '🛠️ Facilities:';
 
       return `
         <div class="doctor-card">
@@ -311,14 +330,14 @@ class OneHealthApp {
               </div>
               <div class="doc-title-sub">${doc.title || (isVet ? 'Veterinary Surgeon' : 'Medical Officer')}</div>
             </div>
-            <span class="badge ${badgeClass}">${isVet ? 'Veterinary Care' : 'Human Care'}</span>
+            <span class="badge ${badgeClass}">${isVet ? (lang === 'mr' ? 'पशुवैद्यकीय काळजी' : lang === 'hi' ? 'पशु चिकित्सा' : 'Veterinary Care') : (lang === 'mr' ? 'मानवी आरोग्य' : lang === 'hi' ? 'मानव चिकित्सा' : 'Human Care')}</span>
           </div>
 
           <!-- Tags: Education, Reg, Experience, Fee -->
           <div class="doc-tags-row">
             <span class="doc-tag exp">🎓 ${doc.education || 'Medical Degree'}</span>
-            ${doc.medical_reg_no ? `<span class="doc-tag">📜 Reg: ${doc.medical_reg_no}</span>` : ''}
-            ${doc.experience_years ? `<span class="doc-tag exp">⏱️ ${doc.experience_years} Yrs Exp</span>` : ''}
+            ${doc.medical_reg_no ? `<span class="doc-tag">📜 ${lang === 'mr' ? 'नोंदणी' : lang === 'hi' ? 'पंजीकरण' : 'Reg'}: ${doc.medical_reg_no}</span>` : ''}
+            ${doc.experience_years ? `<span class="doc-tag exp">⏱️ ${doc.experience_years} ${lang === 'mr' ? 'वर्षे अनुभव' : lang === 'hi' ? 'वर्ष अनुभव' : 'Yrs Exp'}</span>` : ''}
             <span class="doc-tag ${isFree ? 'fee-free' : 'fee-paid'}">💰 ${doc.consultation_fee || 'Standard'}</span>
             <span class="doc-tag">📍 ${doc.village}</span>
           </div>
@@ -326,25 +345,25 @@ class OneHealthApp {
           <!-- Detailed Info Grid -->
           <div class="doc-info-grid">
             <div class="doc-info-item">
-              <strong>🏥 Hospital / Clinic:</strong> ${doc.clinic_name}
+              <strong>${labelHospital}</strong> ${doc.clinic_name}
             </div>
             <div class="doc-info-item">
-              <strong>📍 Address:</strong> ${doc.address}
+              <strong>${labelAddress}</strong> ${doc.address}
             </div>
             <div class="doc-info-item">
-              <strong>🕒 OPD Timings:</strong> ${doc.opd_timings}
+              <strong>${labelTimings}</strong> ${doc.opd_timings}
             </div>
             <div class="doc-info-item">
-              <strong>🗣️ Languages:</strong> ${doc.languages || 'Marathi, Hindi, English'}
+              <strong>${labelLanguages}</strong> ${doc.languages || 'Marathi, Hindi, English'}
             </div>
             ${doc.specialization ? `
               <div class="doc-info-item" style="grid-column: 1 / -1;">
-                <strong>🔬 Specialization:</strong> ${doc.specialization}
+                <strong>${labelSpecialization}</strong> ${doc.specialization}
               </div>
             ` : ''}
             ${doc.facilities ? `
               <div class="doc-info-item" style="grid-column: 1 / -1;">
-                <strong>🛠️ Facilities:</strong> ${doc.facilities}
+                <strong>${labelFacilities}</strong> ${doc.facilities}
               </div>
             ` : ''}
           </div>
@@ -352,15 +371,15 @@ class OneHealthApp {
           <!-- Action Buttons -->
           <div class="doc-actions">
             <a href="tel:${doc.phone.replace(/[^0-9+]/g, '')}" class="btn-call">
-              📞 Call ${doc.phone}
+              📞 ${t('btn_call_doc')} ${doc.phone}
             </a>
             ${doc.whatsapp ? `
               <a href="https://wa.me/${doc.whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(doc.name)},%20I%20would%20like%20to%20consult%20regarding%20a%20health%20screening." target="_blank" class="btn-whatsapp">
-                💬 WhatsApp
+                💬 ${t('btn_whatsapp_doc')}
               </a>
             ` : ''}
             <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.referDirectlyToDoctor('${doc.name}', '${doc.role}')">
-              📋 Start Screening & Consult
+              📋 ${t('btn_consult_doc')}
             </button>
           </div>
         </div>
@@ -369,7 +388,9 @@ class OneHealthApp {
   }
 
   referDirectlyToDoctor(doctorName, role) {
-    this.showToast(`Consultation request flagged for ${doctorName}. Starting screening...`);
+    const lang = window.oneHealthI18n.currentLang;
+    const msg = lang === 'mr' ? `${doctorName} यांच्याकडे सल्ला मागितला आहे. तपासणी सुरू करत आहोत...` : lang === 'hi' ? `${doctorName} से परामर्श के लिए जांच शुरू कर रहे हैं...` : `Consultation request flagged for ${doctorName}. Starting screening...`;
+    this.showToast(msg);
     this.selectedScreeningType = role === 'vet' ? 'livestock' : 'human_general';
     this.navigateTo('screen');
   }
@@ -380,7 +401,7 @@ class OneHealthApp {
   async loadClinicProfileForm() {
     const roleBadge = document.getElementById('profileRoleBadge');
     if (roleBadge) {
-      roleBadge.innerText = this.userRole === 'vet' ? 'Veterinary Officer Profile' : 'Medical Doctor Profile';
+      roleBadge.innerText = this.userRole === 'vet' ? window.oneHealthI18n.t('role_vet') : window.oneHealthI18n.t('role_doctor');
     }
 
     const savedProfile = await window.oneHealthDB.getSetting('doctor_profile_data', null);
@@ -432,28 +453,35 @@ class OneHealthApp {
     await window.oneHealthDB.saveSetting('doctor_profile_data', profile);
     await window.oneHealthDB.saveDoctor(profile);
 
-    this.showToast('Profile & Location saved! Patients in your area can now discover your practice.');
+    const lang = window.oneHealthI18n.currentLang;
+    this.showToast(lang === 'mr' ? 'माहिती सुरक्षित जतन झाली!' : lang === 'hi' ? 'प्रोफाइल सुरक्षित सेव की गई!' : 'Profile & Location saved! Patients in your area can now discover your practice.');
     this.navigateTo('portal');
   }
 
   // =========================================================================
-  // SCREENING FORM BUILDER & SUBMISSION
+  // SCREENING FORM BUILDER & SUBMISSION (Multilingual)
   // =========================================================================
   renderScreeningForm() {
     const container = document.getElementById('screeningFormContainer');
     if (!container) return;
 
     this.capturedImages = [];
+    const t = (k) => window.oneHealthI18n.t(k);
+    const lang = window.oneHealthI18n.currentLang;
 
-    let typeTitle = "Human General Health Screening";
+    let typeTitle = t('cat_human');
     let icon = "🩺";
     if (this.selectedScreeningType === 'child_development') {
-      typeTitle = "Childhood Growth & Milestone Screening (0-5 Yrs)";
+      typeTitle = t('cat_child');
       icon = "👶";
     } else if (this.selectedScreeningType === 'livestock') {
-      typeTitle = "Livestock & Veterinary Health Screening";
+      typeTitle = t('cat_livestock');
       icon = "🐄";
     }
+
+    const lblSubject = this.selectedScreeningType === 'livestock' ? t('lbl_subject_name_vet') : t('lbl_subject_name_human');
+    const lblAge = this.selectedScreeningType === 'child_development' ? t('lbl_age_child') : t('lbl_age_human');
+    const lblGuardian = this.selectedScreeningType === 'livestock' ? t('lbl_guardian_vet') : t('lbl_guardian_human');
 
     container.innerHTML = `
       <div class="card-box">
@@ -464,12 +492,12 @@ class OneHealthApp {
           </div>
           <div style="display:flex; gap:6px;">
             <button type="button" class="btn btn-outline btn-sm" onclick="window.oneHealthApp.readFormAloud()">
-              🔊 Listen
+              🔊 ${t('btn_listen')}
             </button>
             <select class="form-control" style="width:auto; padding:4px 8px;" id="typeSwitcher" onchange="window.oneHealthApp.switchScreeningType(this.value)">
-              <option value="human_general" ${this.selectedScreeningType === 'human_general' ? 'selected' : ''}>Human</option>
-              <option value="child_development" ${this.selectedScreeningType === 'child_development' ? 'selected' : ''}>Child Dev</option>
-              <option value="livestock" ${this.selectedScreeningType === 'livestock' ? 'selected' : ''}>Livestock</option>
+              <option value="human_general" ${this.selectedScreeningType === 'human_general' ? 'selected' : ''}>${t('cat_human')}</option>
+              <option value="child_development" ${this.selectedScreeningType === 'child_development' ? 'selected' : ''}>${t('cat_child')}</option>
+              <option value="livestock" ${this.selectedScreeningType === 'livestock' ? 'selected' : ''}>${t('cat_livestock')}</option>
             </select>
           </div>
         </div>
@@ -478,49 +506,49 @@ class OneHealthApp {
           <!-- Subject Demographics -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">${this.selectedScreeningType === 'livestock' ? 'Animal Tag / ID / Name *' : 'Patient Full Name *'}</label>
-              <input type="text" class="form-control" id="f_subject_name" required placeholder="${this.selectedScreeningType === 'livestock' ? 'e.g., HF Cow #402 / INAPH Tag' : 'e.g., Ramesh Thorat'}">
+              <label class="form-label">${lblSubject}</label>
+              <input type="text" class="form-control" id="f_subject_name" required placeholder="${this.selectedScreeningType === 'livestock' ? 'HF Cow #402 / INAPH Tag' : 'Ramesh Thorat'}">
             </div>
             <div class="form-group">
-              <label class="form-label">${this.selectedScreeningType === 'child_development' ? 'Age in Months *' : 'Age / Year of Birth *'}</label>
-              <input type="${this.selectedScreeningType === 'child_development' ? 'number' : 'text'}" class="form-control" id="f_age" required placeholder="${this.selectedScreeningType === 'child_development' ? 'e.g., 14' : 'e.g., 42 years'}">
+              <label class="form-label">${lblAge}</label>
+              <input type="${this.selectedScreeningType === 'child_development' ? 'number' : 'text'}" class="form-control" id="f_age" required placeholder="${this.selectedScreeningType === 'child_development' ? '14' : '42'}">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">${this.selectedScreeningType === 'livestock' ? 'Species & Breed *' : 'Gender *'}</label>
+              <label class="form-label">${this.selectedScreeningType === 'livestock' ? t('lbl_species') : t('lbl_gender')}</label>
               ${this.selectedScreeningType === 'livestock' ? `
                 <select class="form-control" id="f_species">
-                  <option value="Cattle (Crossbred HF/Jersey)">Cattle (Crossbred HF/Jersey)</option>
-                  <option value="Cattle (Indigenous Gir/Khillar)">Cattle (Indigenous Gir/Khillar)</option>
-                  <option value="Buffalo (Murrah/Jafarabadi)">Buffalo (Murrah/Jafarabadi)</option>
-                  <option value="Goat (Osmanabadi/Sirohi)">Goat (Osmanabadi/Sirohi)</option>
-                  <option value="Sheep (Deccani/Madgyal)">Sheep (Deccani/Madgyal)</option>
-                  <option value="Poultry (Broiler/Desi)">Poultry (Broiler/Desi)</option>
-                  <option value="Canine / Pet">Canine / Pet</option>
+                  <option value="Cattle (Crossbred HF/Jersey)">Cattle (Crossbred HF/Jersey / संकरित गाय)</option>
+                  <option value="Cattle (Indigenous Gir/Khillar)">Cattle (Indigenous Gir/Khillar / देशी गाय)</option>
+                  <option value="Buffalo (Murrah/Jafarabadi)">Buffalo (Murrah/Jafarabadi / म्हैस)</option>
+                  <option value="Goat (Osmanabadi/Sirohi)">Goat (Osmanabadi/Sirohi / शेळी)</option>
+                  <option value="Sheep (Deccani/Madgyal)">Sheep (Deccani/Madgyal / मेंढी)</option>
+                  <option value="Poultry (Broiler/Desi)">Poultry (Broiler/Desi / कुक्कुटपालन)</option>
+                  <option value="Canine / Pet">Canine / Pet (श्वान/पाळीव)</option>
                 </select>
               ` : `
                 <select class="form-control" id="f_gender">
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  <option value="Male">${lang === 'mr' ? 'पुरुष (Male)' : lang === 'hi' ? 'पुरुष (Male)' : 'Male'}</option>
+                  <option value="Female">${lang === 'mr' ? 'स्त्री (Female)' : lang === 'hi' ? 'महिला (Female)' : 'Female'}</option>
+                  <option value="Other">${lang === 'mr' ? 'इतर (Other)' : lang === 'hi' ? 'अन्य (Other)' : 'Other'}</option>
                 </select>
               `}
             </div>
             <div class="form-group">
-              <label class="form-label">Village / Location *</label>
+              <label class="form-label">${t('lbl_village')}</label>
               <input type="text" class="form-control" id="f_village" required value="Kopargaon" placeholder="e.g. Pohegaon, Dhamori, Kopargaon">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">${this.selectedScreeningType === 'livestock' ? 'Livestock Owner Name' : 'Guardian / Relative Name'}</label>
+              <label class="form-label">${lblGuardian}</label>
               <input type="text" class="form-control" id="f_guardian" placeholder="e.g. Bhausaheb Vikhe">
             </div>
             <div class="form-group">
-              <label class="form-label">Contact Phone</label>
+              <label class="form-label">${t('lbl_phone')}</label>
               <input type="tel" class="form-control" id="f_phone" placeholder="e.g. 9822114455">
             </div>
           </div>
@@ -530,7 +558,7 @@ class OneHealthApp {
 
           <!-- Photo Capture & Visual Inspection -->
           <div class="form-group" style="margin-top: 16px;">
-            <label class="form-label">📷 Clinical Photo / Lesion Upload (Offline Compressed)</label>
+            <label class="form-label">📷 ${t('lbl_photo_capture')}</label>
             <input type="file" id="f_camera_input" accept="image/*" class="form-control" onchange="window.oneHealthApp.handleImageCapture(event)">
             <div id="imagePreviewContainer" style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"></div>
           </div>
@@ -538,7 +566,7 @@ class OneHealthApp {
           <!-- Submit Button -->
           <div style="margin-top: 24px;">
             <button type="submit" class="btn btn-primary btn-block" style="font-size:16px; padding:14px;">
-              ⚡ Run Offline AI Screening & Save
+              ⚡ ${t('btn_run_screening')}
             </button>
           </div>
         </form>
@@ -554,142 +582,193 @@ class OneHealthApp {
   }
 
   renderCategorySpecificFields() {
+    const lang = window.oneHealthI18n.currentLang;
+    const t = (k) => window.oneHealthI18n.t(k);
+
     if (this.selectedScreeningType === 'human_general') {
+      const lblTemp = lang === 'mr' ? 'तापमान (Temperature °F)' : lang === 'hi' ? 'तापमान (Temperature °F)' : 'Temperature (°F)';
+      const lblBP = lang === 'mr' ? 'रक्तदाब (BP Systolic / Diastolic)' : lang === 'hi' ? 'ब्लड प्रेशर (Systolic / Diastolic)' : 'Blood Pressure (Systolic / Diastolic)';
+      const lblPulseSpo2 = lang === 'mr' ? 'नाडीचे ठोके (Pulse bpm) व SpO2 (%)' : lang === 'hi' ? 'पल्स (Pulse bpm) व SpO2 (%)' : 'Pulse (bpm) & SpO2 (%)';
+      const lblSugar = lang === 'mr' ? 'रक्तातील साखर (Blood Sugar mg/dL)' : lang === 'hi' ? 'ब्लड शुगर (Blood Sugar mg/dL)' : 'Random Blood Sugar (mg/dL)';
+
+      const s_fever = lang === 'mr' ? 'थंडी वाजून तीव्र ताप येणे' : lang === 'hi' ? 'ठंड लगकर तेज बुखार आना' : 'High fever with chills / rigors';
+      const s_eye = lang === 'mr' ? 'डोळ्यांच्या मागे तीव्र वेदना (Retro-orbital pain)' : lang === 'hi' ? 'आंखों के पीछे तेज दर्द' : 'Retro-orbital pain (behind eyes)';
+      const s_rash = lang === 'mr' ? 'त्वचेवर लाल पुरळ / बारीक डाग (Rash/Petechiae)' : lang === 'hi' ? 'त्वचा पर लाल दाने / चकत्ते' : 'Skin rash or red petechial spots';
+      const s_body = lang === 'mr' ? 'अंगदुखी व सांधेदुखी (Severe Bodyache)' : lang === 'hi' ? 'तेज बदन दर्द व जोड़ों में दर्द' : 'Severe joint / muscular bodyache';
+      const s_cough = lang === 'mr' ? '२ आठवड्यांपेक्षा जास्त खोकला' : lang === 'hi' ? '2 सप्ताह से अधिक की खांसी' : 'Chronic cough > 2 weeks';
+      const s_sweat = lang === 'mr' ? 'रात्री घाम येणे व वजन घटणे' : lang === 'hi' ? 'रात में पसीना व वजन कम होना' : 'Night sweats and weight loss';
+      const s_diarrhea = lang === 'mr' ? 'वारंवार पातळ जुलाब होणे (>३ वेळा)' : lang === 'hi' ? 'बार-बार पतले दस्त होना (>3 बार)' : 'Frequent watery stools (>3/day)';
+      const s_vomit = lang === 'mr' ? 'उलटी व मळमळ होणे' : lang === 'hi' ? 'उल्टी एवं जी मिचलाना' : 'Persistent vomiting and nausea';
+      const s_step = lang === 'mr' ? 'सतत चढणारा ताप (Step-ladder fever)' : lang === 'hi' ? 'लगातार बढ़ता बुखार' : 'Step-ladder continuous fever';
+      const s_ulcer = lang === 'mr' ? 'न भरणारी जखम / अल्सर' : lang === 'hi' ? 'न भरने वाला घाव / छाला' : 'Non-healing foot / skin ulcer';
+
+      const rf_chest = lang === 'mr' ? 'छातीत तीव्र असह्य वेदना / दाब' : lang === 'hi' ? 'सीने में तेज दर्द या भारीपन' : 'Severe crushing chest pain';
+      const rf_stroke = lang === 'mr' ? 'तोंडाचा कोपरा वाकडा होणे / बोलण्यात अडखळणे (पक्षाघात)' : lang === 'hi' ? 'चेहरे का टेढ़ा होना / बोली लड़खड़ाना (स्ट्रोक)' : 'Sudden face droop / speech slur (FAST Stroke)';
+      const rf_breath = lang === 'mr' ? 'श्वास घेण्यास तीव्र त्रास होणे' : lang === 'hi' ? 'सांस लेने में भारी तकलीफ' : 'Severe resting breathlessness';
+      const rf_sensorium = lang === 'mr' ? 'शुद्ध हरपणे / सुस्ती येणे' : lang === 'hi' ? 'बेहोशी / अत्यधिक सुस्ती' : 'Altered sensorium / drowsiness';
+
       return `
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--secondary);">🩺 Physical Vitals</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--secondary);">🩺 ${t('lbl_vitals')}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Temperature (°F)</label>
-            <input type="number" step="0.1" class="form-control" id="v_temp" placeholder="e.g. 98.6 or 102.5">
+            <label class="form-label">${lblTemp}</label>
+            <input type="number" step="0.1" class="form-control" id="v_temp" placeholder="98.6">
           </div>
           <div class="form-group">
-            <label class="form-label">Blood Pressure (Systolic / Diastolic)</label>
+            <label class="form-label">${lblBP}</label>
             <div style="display:flex; gap:6px;">
-              <input type="number" class="form-control" id="v_bpsys" placeholder="Sys 120">
-              <input type="number" class="form-control" id="v_bpdia" placeholder="Dia 80">
+              <input type="number" class="form-control" id="v_bpsys" placeholder="120">
+              <input type="number" class="form-control" id="v_bpdia" placeholder="80">
             </div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Pulse (bpm) & SpO2 (%)</label>
+            <label class="form-label">${lblPulseSpo2}</label>
             <div style="display:flex; gap:6px;">
-              <input type="number" class="form-control" id="v_pulse" placeholder="Pulse 78">
-              <input type="number" class="form-control" id="v_spo2" placeholder="SpO2 98%">
+              <input type="number" class="form-control" id="v_pulse" placeholder="78">
+              <input type="number" class="form-control" id="v_spo2" placeholder="98%">
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">Random Blood Sugar (mg/dL)</label>
-            <input type="number" class="form-control" id="v_sugar" placeholder="e.g. 110 or 240">
+            <label class="form-label">${lblSugar}</label>
+            <input type="number" class="form-control" id="v_sugar" placeholder="110">
           </div>
         </div>
 
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">📋 Observed Symptoms</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">📋 ${t('lbl_symptoms')}</h4>
         <div class="checkbox-grid">
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="fever_chills"> High fever with chills / rigors</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="eye_pain_retroorbital"> Retro-orbital pain (behind eyes)</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="skin_rash_petechiae"> Skin rash or red petechial spots</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="severe_bodyache"> Severe joint / muscular bodyache</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="cough_chronic_2wks"> Chronic cough > 2 weeks</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="night_sweats_weightloss"> Night sweats and weight loss</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="watery_diarrhea"> Frequent watery stools (>3/day)</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="vomiting_nausea"> Persistent vomiting and nausea</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="stepladder_fever"> Step-ladder continuous fever</label>
-          <label class="checkbox-label"><input type="checkbox" name="symptom" value="non_healing_ulcer"> Non-healing foot / skin ulcer</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="fever_chills"> ${s_fever}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="eye_pain_retroorbital"> ${s_eye}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="skin_rash_petechiae"> ${s_rash}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="severe_bodyache"> ${s_body}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="cough_chronic_2wks"> ${s_cough}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="night_sweats_weightloss"> ${s_sweat}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="watery_diarrhea"> ${s_diarrhea}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="vomiting_nausea"> ${s_vomit}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="stepladder_fever"> ${s_step}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="non_healing_ulcer"> ${s_ulcer}</label>
         </div>
 
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:#991b1b;">🚨 Emergency Red Flags</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:#991b1b;">🚨 ${t('lbl_red_flags')}</h4>
         <div class="checkbox-grid">
-          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="chest_pain_severe"> Severe crushing chest pain</label>
-          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="sudden_weakness_speech"> Sudden face droop / speech slur (FAST Stroke)</label>
-          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="severe_breathlessness_rest"> Severe resting breathlessness</label>
-          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="altered_consciousness"> Altered sensorium / drowsiness</label>
+          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="chest_pain_severe"> ${rf_chest}</label>
+          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="sudden_weakness_speech"> ${rf_stroke}</label>
+          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="severe_breathlessness_rest"> ${rf_breath}</label>
+          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="altered_consciousness"> ${rf_sensorium}</label>
         </div>
       `;
     } else if (this.selectedScreeningType === 'child_development') {
+      const lblWeight = lang === 'mr' ? 'वजन (किलो ग्रॅम मध्ये) *' : lang === 'hi' ? 'वजन (किलोग्राम) *' : 'Weight (kg) *';
+      const lblHeight = lang === 'mr' ? 'उंची / लांबी (सेंटीमीटर मध्ये) *' : lang === 'hi' ? 'लंबाई / ऊंचाई (सेमी) *' : 'Length / Height (cm) *';
+      const lblMuac = lang === 'mr' ? 'दंडाचा घेर (MUAC cm)' : lang === 'hi' ? 'मध्य बांह की परिधि (MUAC cm)' : 'MUAC (cm)';
+      const lblEdema = lang === 'mr' ? 'पायावर सूज आहे का (Edema)?' : lang === 'hi' ? 'पैरों में सूजन है क्या (Edema)?' : 'Bilateral Pitting Edema?';
+
+      const optNoEdema = lang === 'mr' ? 'सूज नाही (No Edema)' : lang === 'hi' ? 'सूजन नहीं है' : 'No Edema';
+      const optYesEdema = lang === 'mr' ? 'होय, सूज आहे (Yes, Edema)' : lang === 'hi' ? 'हाँ, दोनों पैरों में सूजन है' : 'Yes (Bilateral Swelling)';
+
+      const m_title = lang === 'mr' ? '🌱 बाल विकासाचे ४ मुख्य टप्पे' : lang === 'hi' ? '🌱 बाल विकास के 4 मुख्य चरण' : '🌱 4-Domain Milestone Evaluations';
+      const optAchieved = lang === 'mr' ? 'सामान्य / वयानुसार साध्य' : lang === 'hi' ? 'सामान्य / उम्र अनुसार सही' : 'Normal / Achieved for age';
+      const optDelayed = lang === 'mr' ? 'विलंब / असमर्थ' : lang === 'hi' ? 'विलंबित / असमर्थ' : 'Delayed / Unable to perform';
+
       return `
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--secondary);">📏 WHO Anthropometric Measurements</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--secondary);">📏 WHO मोजमापे</h4>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Weight (kg) *</label>
-            <input type="number" step="0.1" class="form-control" id="c_weight" required placeholder="e.g. 7.5">
+            <label class="form-label">${lblWeight}</label>
+            <input type="number" step="0.1" class="form-control" id="c_weight" required placeholder="7.5">
           </div>
           <div class="form-group">
-            <label class="form-label">Length / Height (cm) *</label>
-            <input type="number" step="0.1" class="form-control" id="c_height" required placeholder="e.g. 72.0">
+            <label class="form-label">${lblHeight}</label>
+            <input type="number" step="0.1" class="form-control" id="c_height" required placeholder="72.0">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">MUAC (Mid-Upper Arm Circumference cm)</label>
-            <input type="number" step="0.1" class="form-control" id="c_muac" placeholder="e.g. 11.2 (<11.5=SAM, 11.5-12.5=MAM)">
+            <label class="form-label">${lblMuac}</label>
+            <input type="number" step="0.1" class="form-control" id="c_muac" placeholder="11.2 (<11.5=SAM)">
           </div>
           <div class="form-group">
-            <label class="form-label">Bilateral Pitting Edema (Swollen feet)?</label>
+            <label class="form-label">${lblEdema}</label>
             <select class="form-control" id="c_edema">
-              <option value="no">No Edema</option>
-              <option value="yes">Yes (Bilateral Swelling)</option>
+              <option value="no">${optNoEdema}</option>
+              <option value="yes">${optYesEdema}</option>
             </select>
           </div>
         </div>
 
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">🌱 4-Domain Milestone Evaluations</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">${m_title}</h4>
         <div class="form-group">
-          <label class="form-label">1. Gross Motor (Holding neck, sitting, standing, walking for age)</label>
+          <label class="form-label">1. ${lang === 'mr' ? 'शारीरिक हालचाली (मान धरणे, बसणे, उभे राहणे, चालणे)' : lang === 'hi' ? 'शारीरिक विकास (गर्दन संभालना, बैठना, चलना)' : 'Gross Motor (Neck holding, sitting, standing, walking)'}</label>
           <select class="form-control" id="m_gross">
-            <option value="achieved">Normal / Achieved for age</option>
-            <option value="delayed">Delayed / Unable to perform</option>
+            <option value="achieved">${optAchieved}</option>
+            <option value="delayed">${optDelayed}</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">2. Fine Motor (Grasping rattle, transferring objects, pincer grasp)</label>
+          <label class="form-label">2. ${lang === 'mr' ? 'हातांची पकड व बारीक कामे (खेळणे धरणे, वस्तू उचलणे)' : lang === 'hi' ? 'सूक्ष्म विकास (खिलौना पकड़ना, वस्तुएं उठाना)' : 'Fine Motor (Grasping, picking objects)'}</label>
           <select class="form-control" id="m_fine">
-            <option value="achieved">Normal / Achieved for age</option>
-            <option value="delayed">Delayed / Unable to perform</option>
+            <option value="achieved">${optAchieved}</option>
+            <option value="delayed">${optDelayed}</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">3. Language & Communication (Babbling, single words, 2-word phrases)</label>
+          <label class="form-label">3. ${lang === 'mr' ? 'भाषा व संवाद (आवाज काढणे, शब्द बोलणे)' : lang === 'hi' ? 'भाषा एवं संवाद (आवाज निकालना, शब्द बोलना)' : 'Language & Communication (Babbling, single words)'}</label>
           <select class="form-control" id="m_language">
-            <option value="achieved">Normal / Achieved for age</option>
-            <option value="delayed">Delayed / Speech concern</option>
+            <option value="achieved">${optAchieved}</option>
+            <option value="delayed">${optDelayed}</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">4. Social & Cognitive (Social smile, eye contact, playing)</label>
+          <label class="form-label">4. ${lang === 'mr' ? 'सामाजिक व मानसिक प्रतिसाद (हसणे, ओळखणे, खेळणे)' : lang === 'hi' ? 'सामाजिक विकास (मुस्कुराना, पहचानना, खेलना)' : 'Social & Cognitive (Smiling, recognition)'}</label>
           <select class="form-control" id="m_social">
-            <option value="achieved">Normal / Achieved for age</option>
-            <option value="delayed">Delayed / Lack of responsiveness</option>
+            <option value="achieved">${optAchieved}</option>
+            <option value="delayed">${optDelayed}</option>
           </select>
         </div>
       `;
     } else if (this.selectedScreeningType === 'livestock') {
+      const lblVetTemp = lang === 'mr' ? 'गुदा तापमान (Rectal Temp °F)' : lang === 'hi' ? 'पशु का तापमान (°F)' : 'Rectal Temperature (°F)';
+      const lblHerdSize = lang === 'mr' ? 'गोठ्यातील जनावरांची संख्या' : lang === 'hi' ? 'कुल पशुओं की संख्या' : 'Number of Animals in Herd';
+
+      const v_lsd = lang === 'mr' ? 'त्वचेवर कडक गाठी / फोड (LSD - लम्पी त्वचा रोग)' : lang === 'hi' ? 'त्वचा पर सख्त गांठें (लंपी स्किन रोग)' : 'Multiple firm skin nodules/lumps (LSD sign)';
+      const v_milk = lang === 'mr' ? 'दुधात अचानक तीव्र घट (>५०%)' : lang === 'hi' ? 'दूध उत्पादन में अचानक भारी गिरावट (>50%)' : 'Sudden severe drop in milk production (>50%)';
+      const v_saliva = lang === 'mr' ? 'तोंडातून फेसळ लाळ गळणे' : lang === 'hi' ? 'मुंह से झागदार लार गिरना' : 'Excessive frothy salivation & lip smacking';
+      const v_fmd = lang === 'mr' ? 'तोंडात व जिभेवर फोड (लाळ्या खुरकूत / FMD)' : lang === 'hi' ? 'मुंह और जीभ पर छाले (खुरपका-मुंहपका)' : 'Blisters/ulcers in mouth or gums (FMD)';
+      const v_hoof = lang === 'mr' ? 'खुरांच्या मध्ये जखमा व लंगडणे' : lang === 'hi' ? 'खुरों के बीच घाव और लंगड़ाना' : 'Foot lesions between hooves & lameness';
+      const v_mastitis = lang === 'mr' ? 'कास सुजणे, गरम होणे व दुखणे (मस्तान रोग)' : lang === 'hi' ? 'अयन (थन) में सूजन, लाली व दर्द (थनैला)' : 'Swollen, hot, painful udder (Mastitis)';
+      const v_clots = lang === 'mr' ? 'दुधात पिवळसर गुठळ्या किंवा रक्त येणे' : lang === 'hi' ? 'दूध में गांठें, छीछड़े या खून आना' : 'Milk with yellow clots, flakes, or blood';
+      const v_bq = lang === 'mr' ? 'मांडीवर किंवा खांद्यावर कुरकुरीत वायू सूज (फऱ्या / BQ)' : lang === 'hi' ? 'जांघ या कंधे पर गैस वाली सूजन (ब्लैक क्वार्टर)' : 'Crepitating gas swelling on thigh/shoulder (BQ)';
+      const v_hs = lang === 'mr' ? 'घशावर सूज व घोरल्यासारखा श्वास (घटसर्प / HS)' : lang === 'hi' ? 'गले पर सूजन व सांस लेने में खर्र-खर्र (गलघोंटू)' : 'Swollen throat / dewlap area with snoring';
+      const v_ppr = lang === 'mr' ? 'शेळ्यांमध्ये दुर्गंधीयुक्त जुलाब व डोळ्यातून पाणी (PPR)' : lang === 'hi' ? 'बकरियों में बदबूदार दस्त व आंखों से स्राव (PPR)' : 'Foul diarrhea & ocular discharge (Goats/PPR)';
+      const v_poultry = lang === 'mr' ? 'पक्ष्यांमध्ये रक्ताची विष्ठा व पंख लोंबणे' : lang === 'hi' ? 'मुर्गियों में खूनी दस्त व पंख लटकना' : 'Bloody droppings & drooping wings (Poultry)';
+
       return `
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--secondary);">🩺 Livestock Clinical Signs</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--secondary);">🩺 ${t('lbl_vitals')}</h4>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Rectal Temperature (°F)</label>
-            <input type="number" step="0.1" class="form-control" id="vet_temp" placeholder="e.g. 101.5 (Normal) or 105.2 (Fever)">
+            <label class="form-label">${lblVetTemp}</label>
+            <input type="number" step="0.1" class="form-control" id="vet_temp" placeholder="101.5">
           </div>
           <div class="form-group">
-            <label class="form-label">Number of Animals in Herd</label>
+            <label class="form-label">${lblHerdSize}</label>
             <input type="number" class="form-control" id="vet_herd_size" value="1">
           </div>
         </div>
 
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">📋 Key Clinical Manifestations</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">📋 ${t('lbl_symptoms')}</h4>
         <div class="checkbox-grid">
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="skin_nodules_lumps"> Multiple firm skin nodules/lumps (LSD sign)</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="milk_drop_severe"> Sudden severe drop in milk production (>50%)</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="salivation_frothing"> Excessive frothy salivation & lip smacking</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="mouth_tongue_blisters"> Blisters/ulcers in mouth or gums (FMD)</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="hoof_lesions_lameness"> Foot lesions between hooves & lameness</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="hard_swollen_udder"> Swollen, hot, painful udder (Mastitis)</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="clots_blood_in_milk"> Milk with yellow clots, flakes, or blood</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="crepitating_swelling_leg"> Crackling gas swelling on shoulder/thigh (BQ)</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="swollen_throat_dewlap"> Swollen throat / dewlap area with snoring</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="nasal_discharge_foul_diarrhea"> Foul diarrhea & ocular discharge (Goats/PPR)</label>
-          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="bloody_droppings_birds"> Bloody droppings & drooping wings (Poultry)</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="skin_nodules_lumps"> ${v_lsd}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="milk_drop_severe"> ${v_milk}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="salivation_frothing"> ${v_saliva}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="mouth_tongue_blisters"> ${v_fmd}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="hoof_lesions_lameness"> ${v_hoof}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="hard_swollen_udder"> ${v_mastitis}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="clots_blood_in_milk"> ${v_clots}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="crepitating_swelling_leg"> ${v_bq}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="swollen_throat_dewlap"> ${v_hs}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="nasal_discharge_foul_diarrhea"> ${v_ppr}</label>
+          <label class="checkbox-label"><input type="checkbox" name="vet_symptom" value="bloody_droppings_birds"> ${v_poultry}</label>
         </div>
       `;
     }
@@ -825,15 +904,18 @@ class OneHealthApp {
     this.renderResultCard(caseRecord, aiResult, village);
 
     if (aiResult.risk_level === 'RED') {
-      window.oneHealthVoice.speak("Warning. Critical emergency risk identified. Please refer to Sub-District Hospital immediately.");
+      window.oneHealthVoice.speak(window.oneHealthI18n.currentLang === 'mr' ? "सावधान. आणीबाणीचा धोका आढळला आहे. तात्काळ ग्रामीण रुग्णालयात दाखल करा." : window.oneHealthI18n.currentLang === 'hi' ? "सावधान. आपातकालीन स्थिति पाई गई है। तुरंत अस्पताल ले जाएं।" : "Warning. Critical emergency risk identified. Please refer to Sub-District Hospital immediately.");
     } else {
-      window.oneHealthVoice.speak(`Screening completed. Result: ${aiResult.primary_condition}.`);
+      window.oneHealthVoice.speak(`${window.oneHealthI18n.currentLang === 'mr' ? 'तपासणी पूर्ण झाली.' : window.oneHealthI18n.currentLang === 'hi' ? 'जांच पूरी हुई।' : 'Screening completed.'} ${aiResult.primary_condition}.`);
     }
   }
 
   async renderResultCard(caseRecord, aiResult, village) {
     const resultBox = document.getElementById('screeningResultContainer');
     if (!resultBox) return;
+
+    const lang = window.oneHealthI18n.currentLang;
+    const t = (k) => window.oneHealthI18n.t(k);
 
     const nearbyDocs = await window.oneHealthDB.getNearbyDoctors(village, caseRecord.assigned_role);
     const topDoc = nearbyDocs.length > 0 ? nearbyDocs[0] : null;
@@ -842,31 +924,31 @@ class OneHealthApp {
       <div class="result-box risk-${aiResult.risk_level}">
         <div class="result-header">
           <span class="badge badge-${aiResult.risk_level.toLowerCase()}">
-            ${aiResult.risk_level} RISK (Confidence: ${Math.round(aiResult.confidence_score * 100)}%)
+            ${aiResult.risk_level} RISK (${lang === 'mr' ? 'विश्वासार्हता' : lang === 'hi' ? 'सटीकता' : 'Confidence'}: ${Math.round(aiResult.confidence_score * 100)}%)
           </span>
           <span style="font-size:12px; font-weight:700;">ID: ${caseRecord.id}</span>
         </div>
 
         <h3 class="result-title">${aiResult.primary_condition}</h3>
-        <p class="result-summary"><strong>Summary:</strong> ${aiResult.triage_summary}</p>
+        <p class="result-summary"><strong>${lang === 'mr' ? 'तपासणी सारांश:' : lang === 'hi' ? 'जांच सारांश:' : 'Summary:'}</strong> ${aiResult.triage_summary}</p>
 
-        <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">📋 Care & Clinical Recommendations:</h4>
+        <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">📋 ${lang === 'mr' ? 'उपचार व वैद्यकीय सूचना:' : lang === 'hi' ? 'देखभाल एवं चिकित्सकीय परामर्श:' : 'Care & Clinical Recommendations:'}</h4>
         <ul class="recommendations-list">
           ${aiResult.recommendations.map(r => `<li>${r}</li>`).join('')}
         </ul>
 
         ${topDoc ? `
           <div style="background:rgba(255,255,255,0.9); padding:14px; border-radius:8px; margin:14px 0; border:1px solid #cbd5e1;">
-            <div style="font-size:12px; font-weight:800; color:var(--secondary); text-transform:uppercase;">📍 Nearest Doctor in ${village}:</div>
+            <div style="font-size:12px; font-weight:800; color:var(--secondary); text-transform:uppercase;">📍 ${lang === 'mr' ? `${village} मधील जवळचे डॉक्टर:` : lang === 'hi' ? `${village} में नजदीकी डॉक्टर:` : `Nearest Doctor in ${village}:`}</div>
             <strong style="font-size:16px; display:block; color:var(--text-main); margin-top:2px;">${topDoc.name} (${topDoc.education})</strong>
-            <div style="font-size:12.5px; color:#475569;">🏥 ${topDoc.clinic_name} | 💰 Fee: <strong>${topDoc.consultation_fee}</strong></div>
+            <div style="font-size:12.5px; color:#475569;">🏥 ${topDoc.clinic_name} | 💰 ${lang === 'mr' ? 'फी' : lang === 'hi' ? 'फीस' : 'Fee'}: <strong>${topDoc.consultation_fee}</strong></div>
             <div style="font-size:12px; color:#64748b;">📍 ${topDoc.address} | 🕒 ${topDoc.opd_timings}</div>
             <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
               <a href="tel:${topDoc.phone.replace(/[^0-9+]/g, '')}" class="btn-call" style="font-size:12px; padding:6px 12px;">
-                📞 Call ${topDoc.phone}
+                📞 ${t('btn_call_doc')} ${topDoc.phone}
               </a>
               <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.navigateTo('doctors')">
-                View All Doctors Near You ➔
+                ${t('btn_find_nearby_docs')}
               </button>
             </div>
           </div>
@@ -874,10 +956,10 @@ class OneHealthApp {
 
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
           <button class="btn btn-outline" onclick="window.oneHealthApp.openCaseModal('${caseRecord.id}')">
-            📄 View Full Details & Print
+            📄 ${t('btn_export_pdf')}
           </button>
           <button class="btn btn-primary" onclick="window.oneHealthApp.navigateTo('cases')">
-            📂 Go to All Cases
+            📂 ${t('records_title')}
           </button>
         </div>
       </div>
@@ -910,7 +992,7 @@ class OneHealthApp {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      this.showToast('Cases exported successfully as JSON!');
+      this.showToast(window.oneHealthI18n.currentLang === 'mr' ? 'डेटा यशस्वीरित्या डाउनलोड झाला!' : 'Cases exported successfully as JSON!');
     } catch (err) {
       alert(`Export failed: ${err.message}`);
     }
@@ -924,7 +1006,7 @@ class OneHealthApp {
       const text = await file.text();
       const jsonData = JSON.parse(text);
       const count = await window.oneHealthDB.importDataFromJSON(jsonData);
-      this.showToast(`Imported ${count} cases successfully!`);
+      this.showToast(`${count} ${window.oneHealthI18n.currentLang === 'mr' ? 'नोंदी यशस्वीरित्या जोडल्या!' : 'cases imported successfully!'}`);
       await this.loadCasesList();
       event.target.value = '';
     } catch (err) {
@@ -959,13 +1041,16 @@ class OneHealthApp {
     const container = document.getElementById('casesListContainer');
     if (!container) return;
 
+    const lang = window.oneHealthI18n.currentLang;
+    const t = (k) => window.oneHealthI18n.t(k);
+
     if (cases.length === 0) {
       container.innerHTML = `
         <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
           <span style="font-size:40px;">📭</span>
-          <p style="margin-top:10px; font-weight:600;">No screening cases match your search or filter.</p>
+          <p style="margin-top:10px; font-weight:600;">${lang === 'mr' ? 'कोणत्याही नोंदी आढळल्या नाहीत.' : lang === 'hi' ? 'कोई रिकॉर्ड नहीं मिला।' : 'No screening cases match your search or filter.'}</p>
           <button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="window.oneHealthApp.navigateTo('screen')">
-            + Start New Screening
+            + ${t('btn_start_screening')}
           </button>
         </div>
       `;
@@ -975,6 +1060,9 @@ class OneHealthApp {
     container.innerHTML = cases.map(c => {
       const isSynced = c.is_synced;
       let icon = c.case_type === 'human_general' ? '🩺' : c.case_type === 'child_development' ? '👶' : '🐄';
+
+      const tagSynced = isSynced ? `🟢 <span style="color:#059669; font-weight:700;">${lang === 'mr' ? 'सिंक झाले' : lang === 'hi' ? 'सिंक हुआ' : 'Synced'}</span>` : `🟠 <span style="color:#ea580c; font-weight:700;">${lang === 'mr' ? 'ऑफलाइन जतन' : lang === 'hi' ? 'ऑफलाइन सेव' : 'Saved Offline'}</span>`;
+      const tagReviewed = (c.reviews && c.reviews.length > 0) ? ` | 👨‍⚕️ <strong style="color:var(--secondary);">${lang === 'mr' ? 'तपासले' : lang === 'hi' ? 'समीक्षित' : 'Reviewed'}</strong>` : '';
 
       return `
         <div class="case-card" onclick="window.oneHealthApp.openCaseModal('${c.id}')">
@@ -989,8 +1077,8 @@ class OneHealthApp {
           </div>
 
           <div class="case-meta">
-            ${c.species ? `Species: <strong>${c.species}</strong> | ` : ''}
-            Age: <strong>${c.age_or_dob || 'N/A'}</strong> |
+            ${c.species ? `${lang === 'mr' ? 'प्रकार:' : lang === 'hi' ? 'प्रजाति:' : 'Species:'} <strong>${c.species}</strong> | ` : ''}
+            ${lang === 'mr' ? 'वय:' : lang === 'hi' ? 'उम्र:' : 'Age:'} <strong>${c.age_or_dob || 'N/A'}</strong> |
             📍 <strong>${c.village || 'Kopargaon'}</strong>
           </div>
 
@@ -1000,10 +1088,7 @@ class OneHealthApp {
 
           <div class="case-footer">
             <span>📅 ${new Date(c.client_created_at).toLocaleDateString()}</span>
-            <span>
-              ${isSynced ? '🟢 <span style="color:#059669; font-weight:700;">Synced</span>' : '🟠 <span style="color:#ea580c; font-weight:700;">Saved Offline</span>'}
-              ${(c.reviews && c.reviews.length > 0) ? ' | 👨‍⚕️ <strong style="color:var(--secondary);">Reviewed</strong>' : ''}
-            </span>
+            <span>${tagSynced}${tagReviewed}</span>
           </div>
         </div>
       `;
@@ -1023,13 +1108,14 @@ class OneHealthApp {
 
     const reviews = caseData.reviews || [];
     const payload = caseData.data_payload || {};
+    const lang = window.oneHealthI18n.currentLang;
 
     modalBody.innerHTML = `
       <div class="printable-slip">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--border-color); padding-bottom:12px; margin-bottom:16px;">
           <div>
-            <h2 style="font-size:20px; font-weight:800; color:#0f766e;">ONEHEALTH AI - CLINICAL CASE RECORD</h2>
-            <p style="font-size:12px; color:var(--text-muted);">Kopargaon Rural Health & Veterinary Tele-Triage Network</p>
+            <h2 style="font-size:20px; font-weight:800; color:#0f766e;">ONEHEALTH AI - ${lang === 'mr' ? 'वैद्यकीय केस रेकॉर्ड' : lang === 'hi' ? 'क्लिनिकल केस रिकॉर्ड' : 'CLINICAL CASE RECORD'}</h2>
+            <p style="font-size:12px; color:var(--text-muted);">${lang === 'mr' ? 'कोपरगाव ग्रामीण आरोग्य व पशुधन नेटवर्क' : lang === 'hi' ? 'कोपरगांव ग्रामीण स्वास्थ्य एवं पशु चिकित्सा नेटवर्क' : 'Kopargaon Rural Health & Veterinary Tele-Triage Network'}</p>
           </div>
           <div style="text-align:right;">
             <span class="badge badge-${(caseData.risk_level || 'GREEN').toLowerCase()}" style="font-size:13px; padding:6px 12px;">
@@ -1041,17 +1127,17 @@ class OneHealthApp {
 
         <div style="background:#f8fafc; padding:14px; border-radius:8px; margin-bottom:16px;">
           <div class="form-row">
-            <div><strong>Subject / Name:</strong> ${caseData.subject_name}</div>
-            <div><strong>Age / Gender:</strong> ${caseData.age_or_dob || 'N/A'} (${caseData.gender_or_sex || caseData.species || 'N/A'})</div>
+            <div><strong>${lang === 'mr' ? 'नाव:' : lang === 'hi' ? 'नाम:' : 'Subject / Name:'}</strong> ${caseData.subject_name}</div>
+            <div><strong>${lang === 'mr' ? 'वय / लिंग:' : lang === 'hi' ? 'उम्र / लिंग:' : 'Age / Gender:'}</strong> ${caseData.age_or_dob || 'N/A'} (${caseData.gender_or_sex || caseData.species || 'N/A'})</div>
           </div>
           <div class="form-row" style="margin-top:6px;">
-            <div><strong>Village:</strong> ${caseData.village}</div>
-            <div><strong>Contact / Guardian:</strong> ${caseData.contact_phone || 'N/A'} (${caseData.guardian_or_owner || 'Self'})</div>
+            <div><strong>${lang === 'mr' ? 'गाव:' : lang === 'hi' ? 'गांव:' : 'Village:'}</strong> ${caseData.village}</div>
+            <div><strong>${lang === 'mr' ? 'मोबाईल / पालक:' : lang === 'hi' ? 'फोन / अभिभावक:' : 'Contact / Guardian:'}</strong> ${caseData.contact_phone || 'N/A'} (${caseData.guardian_or_owner || 'Self'})</div>
           </div>
         </div>
 
         <div style="margin-bottom:16px;">
-          <h4 style="font-size:15px; font-weight:700; color:var(--text-main); margin-bottom:4px;">🤖 AI Screening Assessment</h4>
+          <h4 style="font-size:15px; font-weight:700; color:var(--text-main); margin-bottom:4px;">🤖 ${lang === 'mr' ? 'एआय तपासणी अहवाल' : lang === 'hi' ? 'एआई जांच रिपोर्ट' : 'AI Screening Assessment'}</h4>
           <p style="font-size:16px; font-weight:700; color:#0f766e;">${caseData.primary_condition}</p>
           <p style="font-size:13px; margin-top:4px; line-height:1.4;">${caseData.triage_summary}</p>
         </div>
@@ -1081,19 +1167,10 @@ class OneHealthApp {
           </div>
         ` : ''}
 
-        ${(caseData.images && caseData.images.length > 0) ? `
-          <div style="margin-bottom:16px;">
-            <h5 style="font-size:13px; font-weight:700; margin-bottom:6px;">Clinical Photos:</h5>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              ${caseData.images.map(img => `<img src="${img}" style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:1px solid #cbd5e1;">`).join('')}
-            </div>
-          </div>
-        ` : ''}
-
         <!-- Doctor / Vet Clinical Reviews -->
         <div style="border-top:1px solid var(--border-color); padding-top:14px; margin-top:16px;">
           <h4 style="font-size:15px; font-weight:700; margin-bottom:10px; color:var(--secondary);">
-            👨‍⚕️ Professional Review & Prescription
+            👨‍⚕️ ${lang === 'mr' ? 'डॉक्टरांचा सल्ला व औषधोपचार' : lang === 'hi' ? 'डॉक्टर का परामर्श एवं दवाएं' : 'Professional Review & Prescription'}
           </h4>
           ${reviews.length > 0 ? reviews.map(r => `
             <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px; margin-bottom:10px;">
@@ -1101,35 +1178,35 @@ class OneHealthApp {
                 <strong>${r.reviewer_name} (${r.reviewer_role.toUpperCase()})</strong>
                 <span style="font-size:11px; color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString()}</span>
               </div>
-              <p style="font-size:13px; margin-bottom:6px;"><strong>Clinical Notes:</strong> ${r.reviewer_notes}</p>
-              ${r.prescribed_treatment ? `<div style="font-size:13px; background:#ffffff; padding:8px; border-radius:6px; margin-bottom:6px; white-space:pre-line;"><strong>Prescribed Rx:</strong>\n${r.prescribed_treatment}</div>` : ''}
-              ${r.escalation_instructions ? `<p style="font-size:12px; color:#991b1b;"><strong>Referral / Action:</strong> ${r.escalation_instructions}</p>` : ''}
+              <p style="font-size:13px; margin-bottom:6px;"><strong>${lang === 'mr' ? 'निरीक्षण:' : lang === 'hi' ? 'नोट्स:' : 'Notes:'}</strong> ${r.reviewer_notes}</p>
+              ${r.prescribed_treatment ? `<div style="font-size:13px; background:#ffffff; padding:8px; border-radius:6px; margin-bottom:6px; white-space:pre-line;"><strong>Rx:</strong>\n${r.prescribed_treatment}</div>` : ''}
+              ${r.escalation_instructions ? `<p style="font-size:12px; color:#991b1b;"><strong>${lang === 'mr' ? 'रेफरल सूचना:' : lang === 'hi' ? 'रेफरल निर्देश:' : 'Referral:'}</strong> ${r.escalation_instructions}</p>` : ''}
             </div>
           `).join('') : `
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">No doctor review submitted yet.</p>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">${lang === 'mr' ? 'अद्याप डॉक्टरांचा सल्ला नोंदवला नाही.' : lang === 'hi' ? 'अभी तक कोई डॉक्टर परामर्श दर्ज नहीं हुआ है।' : 'No doctor review submitted yet.'}</p>
           `}
 
           <!-- Add Review Form -->
           <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px; margin-top:12px;">
-            <h5 style="font-size:13px; font-weight:700; margin-bottom:8px;">Add Clinical Review / Tele-Prescription</h5>
+            <h5 style="font-size:13px; font-weight:700; margin-bottom:8px;">${lang === 'mr' ? 'सल्ला व औषधे नोंदवा (Rx)' : lang === 'hi' ? 'परामर्श व दवाएं लिखें' : 'Add Clinical Review / Tele-Prescription'}</h5>
             <div class="form-group">
-              <input type="text" class="form-control" id="rev_name" placeholder="Reviewer Name (e.g. Dr. Anand Kulkarni)" value="${localStorage.getItem('onehealth_reviewer_name') || ''}">
+              <input type="text" class="form-control" id="rev_name" placeholder="Dr. Anand Kulkarni" value="${localStorage.getItem('onehealth_reviewer_name') || ''}">
             </div>
             <div class="form-group">
-              <textarea class="form-control" id="rev_notes" rows="2" placeholder="Clinical notes, differential diagnosis confirmation..."></textarea>
+              <textarea class="form-control" id="rev_notes" rows="2" placeholder="${lang === 'mr' ? 'निदान व वैद्यकीय नोंदी...' : lang === 'hi' ? 'निदान व क्लिनिकल नोट्स...' : 'Clinical notes, differential diagnosis confirmation...'}"></textarea>
             </div>
             <div class="form-group">
-              <textarea class="form-control" id="rev_treatment" rows="2" placeholder="Prescription / Medications / Dosage (e.g. Tab Paracetamol 650mg TDS x 3 days)"></textarea>
+              <textarea class="form-control" id="rev_treatment" rows="2" placeholder="${lang === 'mr' ? 'औषधांची नावे व प्रमाण (उदा. Tab Paracetamol 650mg TDS x 3 दिवस)' : lang === 'hi' ? 'दवाएं एवं खुराक...' : 'Prescription / Medications / Dosage'}"></textarea>
             </div>
             <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.submitReview('${caseData.id}')">
-              ✍️ Submit Review & Sign-Off
+              ✍️ ${lang === 'mr' ? 'स्वाक्षरी करून जतन करा' : lang === 'hi' ? 'हस्ताक्षर कर सुरक्षित करें' : 'Submit Review & Sign-Off'}
             </button>
           </div>
         </div>
 
         <div style="margin-top:20px; display:flex; gap:10px;">
           <button class="btn btn-outline btn-block" onclick="window.print()">
-            🖨️ Print Clinical Slip
+            🖨️ ${lang === 'mr' ? 'केस स्लिप प्रिंट करा' : lang === 'hi' ? 'केस पर्ची प्रिंट करें' : 'Print Clinical Slip'}
           </button>
         </div>
       </div>
@@ -1149,7 +1226,7 @@ class OneHealthApp {
     const treatment = document.getElementById('rev_treatment').value.trim();
 
     if (!notes) {
-      alert('Please enter clinical notes');
+      alert(window.oneHealthI18n.currentLang === 'mr' ? 'कृपया वैद्यकीय नोंदी भरा' : 'Please enter clinical notes');
       return;
     }
 
@@ -1174,7 +1251,7 @@ class OneHealthApp {
       window.oneHealthSync.triggerAutoSync(true);
     }
 
-    this.showToast('Clinical review recorded & queued.');
+    this.showToast(window.oneHealthI18n.currentLang === 'mr' ? 'सल्ला नोंदवला गेला आहे.' : 'Clinical review recorded & queued.');
     this.openCaseModal(caseId);
   }
 
@@ -1187,6 +1264,7 @@ class OneHealthApp {
 
     const role = this.userRole || 'doctor';
     const cases = await window.oneHealthDB.getAllCases();
+    const lang = window.oneHealthI18n.currentLang;
 
     const filtered = cases.filter(c => {
       if (role === 'vet') {
@@ -1200,7 +1278,7 @@ class OneHealthApp {
     filtered.sort((a, b) => (weights[b.risk_level] || 0) - (weights[a.risk_level] || 0));
 
     if (filtered.length === 0) {
-      container.innerHTML = `<p class="text-muted" style="text-align:center; padding:30px;">No pending cases in your triage queue.</p>`;
+      container.innerHTML = `<p class="text-muted" style="text-align:center; padding:30px;">${lang === 'mr' ? 'सध्या तपासणीसाठी कोणतीही प्रलंबित प्रकरणे नाहीत.' : lang === 'hi' ? 'वर्तमान में कोई लंबित केस नहीं है।' : 'No pending cases in your triage queue.'}</p>`;
       return;
     }
 
@@ -1216,7 +1294,7 @@ class OneHealthApp {
         <div class="case-condition">${c.primary_condition}</div>
         <div class="case-footer">
           <span>📍 ${c.village}</span>
-          <span class="cat-btn" style="padding:4px 8px; font-size:11px;">Review Case ➔</span>
+          <span class="cat-btn" style="padding:4px 8px; font-size:11px;">${lang === 'mr' ? 'तपासा ➔' : lang === 'hi' ? 'समीक्षा ➔' : 'Review Case ➔'}</span>
         </div>
       </div>
     `).join('');

@@ -27,13 +27,13 @@
         <div class="brand-icon">🌱</div>
         <div>
           <h1 class="brand-title" data-i18n="app_title">ONEHEALTH AI</h1>
-          <span class="brand-sub" id="headerRoleSubtitle">Rural Healthcare & Vet Network</span>
+          <span class="brand-sub" id="headerRoleSubtitle" data-i18n="app_subtitle">Rural Healthcare & Vet Network</span>
         </div>
       </div>
       <div class="header-controls">
         <button id="btnSwitchRole" class="role-badge-btn" onclick="window.oneHealthApp.openRoleModal()" title="Switch Role (Doctor / Vet / Patient)">
           <span id="roleBadgeIcon">👤</span>
-          <span id="roleBadgeText">Patient</span>
+          <span id="roleBadgeText" data-i18n="role_patient">Patient</span>
         </button>
         <select id="langSelect" class="lang-select" aria-label="Select Language">
           <option value="en">English</option>
@@ -50,7 +50,7 @@
         <span id="networkText" data-i18n="status_online">ONLINE</span>
       </div>
       <button id="btnManualSync" class="sync-badge-btn" title="Click to trigger sync">
-        🔄 <span id="pendingSyncCount">Checking...</span>
+        🔄 <span id="pendingSyncCount" data-i18n="sync_now">Checking...</span>
       </button>
     </div>
   </header>
@@ -62,24 +62,24 @@
     <section id="view-home" class="view-section active">
       <!-- EDITORIAL HERO SECTION -->
       <div class="hero-editorial">
-        <span class="hero-editorial-badge">OFFLINE-FIRST TELEMEDICINE & VETERINARY CARE</span>
-        <h2 class="hero-editorial-title">
+        <span class="hero-editorial-badge" data-i18n="hero_badge">OFFLINE-FIRST TELEMEDICINE & VETERINARY CARE</span>
+        <h2 class="hero-editorial-title" data-i18n="hero_title">
           Healthcare that keeps working when the network doesn't.
         </h2>
-        <p class="hero-editorial-desc">
+        <p class="hero-editorial-desc" data-i18n="hero_desc">
           ONEHEALTH AI lets patients, community health workers, doctors, and veterinarians in low-connectivity rural areas keep screening, consulting, prescribing, and recording care offline — then synchronizes everything the moment a connection returns.
         </p>
 
         <!-- Direct Choice CTAs on Homepage -->
         <div class="hero-cta-group">
           <button class="btn-hero-primary" onclick="window.oneHealthApp.setUserRole('patient')">
-            👤 Get started as a patient
+            <span data-i18n="btn_get_started_patient">👤 Get started as a patient</span>
           </button>
           <button class="btn-hero-outline" onclick="window.oneHealthApp.setUserRole('doctor')">
-            🩺 I'm a medical doctor
+            <span data-i18n="btn_im_doctor">🩺 I'm a medical doctor</span>
           </button>
           <button class="btn-hero-outline" onclick="window.oneHealthApp.setUserRole('vet')">
-            🐄 I'm a veterinarian
+            <span data-i18n="btn_im_vet">🐄 I'm a veterinarian</span>
           </button>
         </div>
 
@@ -87,19 +87,19 @@
         <div class="hero-features-row">
           <div class="hero-feat-item">
             <span class="hero-feat-num">01</span>
-            <span class="hero-feat-text">100% Offline AI Triage & Vitals Analysis</span>
+            <span class="hero-feat-text" data-i18n="hero_feat_1">100% Offline AI Triage & Vitals Analysis</span>
           </div>
           <div class="hero-feat-item">
             <span class="hero-feat-num">02</span>
-            <span class="hero-feat-text">WHO Growth & Child Malnutrition Tracking</span>
+            <span class="hero-feat-text" data-i18n="hero_feat_2">WHO Growth & Child Malnutrition Tracking</span>
           </div>
           <div class="hero-feat-item">
             <span class="hero-feat-num">03</span>
-            <span class="hero-feat-text">Livestock & Herd Epidemic Defense</span>
+            <span class="hero-feat-text" data-i18n="hero_feat_3">Livestock & Herd Epidemic Defense</span>
           </div>
           <div class="hero-feat-item">
             <span class="hero-feat-num">04</span>
-            <span class="hero-feat-text">Doctor Directory & Tele-Prescriptions</span>
+            <span class="hero-feat-text" data-i18n="hero_feat_4">Doctor Directory & Tele-Prescriptions</span>
           </div>
         </div>
       </div>
@@ -107,11 +107,11 @@
       <!-- Quick Action Banner for Patient -->
       <div id="patientQuickBanner" class="card-box" style="border-left: 4px solid var(--secondary); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
         <div>
-          <h4 style="font-size:15px; font-weight:800; color:var(--secondary);">📍 Need a Doctor or Vet in your Area?</h4>
-          <p style="font-size:13px; color:var(--text-muted);">View education, consultation fee, OPD timings, and call verified doctors in Kopargaon, Pohegaon, Dhamori, & nearby villages.</p>
+          <h4 style="font-size:15px; font-weight:800; color:var(--secondary);" data-i18n="patient_banner_title">📍 Need a Doctor or Vet in your Area?</h4>
+          <p style="font-size:13px; color:var(--text-muted);" data-i18n="patient_banner_desc">View education, consultation fee, OPD timings, and call verified doctors in Kopargaon, Pohegaon, Dhamori, & nearby villages.</p>
         </div>
         <button class="btn btn-secondary btn-sm" onclick="window.oneHealthApp.navigateTo('doctors')">
-          🔍 Find Nearby Doctors ➔
+          <span data-i18n="btn_find_nearby_docs">🔍 Find Nearby Doctors ➔</span>
         </button>
       </div>
 
@@ -134,7 +134,7 @@
             <h3 class="cat-title" data-i18n="cat_child">Child Development</h3>
             <p class="cat-desc" data-i18n="cat_child_desc">0-5 years WHO growth standards, malnutrition (SAM/MAM), milestone delays.</p>
           </div>
-          <button class="cat-btn" data-i18n="btn_start_screening">Track Growth ➔</button>
+          <button class="cat-btn" data-i18n="btn_track_growth">Track Growth ➔</button>
         </div>
 
         <!-- Livestock & Veterinary Health -->
@@ -144,7 +144,7 @@
             <h3 class="cat-title" data-i18n="cat_livestock">Livestock & Vet</h3>
             <p class="cat-desc" data-i18n="cat_livestock_desc">Cattle, Buffalo, Goat, Poultry disease triage (LSD, FMD, Mastitis).</p>
           </div>
-          <button class="cat-btn" data-i18n="btn_start_screening">Screen Herd ➔</button>
+          <button class="cat-btn" data-i18n="btn_screen_herd">Screen Herd ➔</button>
         </div>
       </div>
     </section>
@@ -158,10 +158,10 @@
     <section id="view-doctors" class="view-section">
       <div class="card-box">
         <div class="form-title-bar">
-          <h3 class="form-title">📍 Doctors & Vets in Your Area</h3>
+          <h3 class="form-title" data-i18n="dir_title">📍 Doctors & Vets in Your Area</h3>
           <div style="display:flex; gap:6px;">
             <select class="form-control" id="doctorVillageFilter" style="width:auto; padding:4px 8px;" onchange="window.oneHealthApp.loadDoctorsDirectory()">
-              <option value="">All Villages (Kopargaon Taluka)</option>
+              <option value="" data-i18n="all_villages">All Villages (Kopargaon Taluka)</option>
               <option value="Kopargaon">Kopargaon Town</option>
               <option value="Pohegaon">Pohegaon</option>
               <option value="Dhamori">Dhamori</option>
@@ -169,13 +169,13 @@
               <option value="Rahata">Rahata</option>
             </select>
             <select class="form-control" id="doctorRoleFilter" style="width:auto; padding:4px 8px;" onchange="window.oneHealthApp.loadDoctorsDirectory()">
-              <option value="">All Specialists</option>
-              <option value="doctor">Human Doctors (MBBS/MD)</option>
-              <option value="vet">Veterinary Surgeons (BVSc)</option>
+              <option value="" data-i18n="all_specialists">All Specialists</option>
+              <option value="doctor" data-i18n="human_docs_only">Human Doctors (MBBS/MD)</option>
+              <option value="vet" data-i18n="vets_only">Veterinary Surgeons (BVSc)</option>
             </select>
           </div>
         </div>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;" data-i18n="dir_subtitle">
           Verified medical doctors and veterinary dispensaries with complete education details, consultation fees, OPD timings, and contact numbers.
         </p>
 
@@ -188,35 +188,35 @@
     <section id="view-cases" class="view-section">
       <div class="card-box">
         <div class="form-title-bar">
-          <h3 class="form-title" data-i18n="nav_cases">Case Records</h3>
+          <h3 class="form-title" data-i18n="records_title">Case Records</h3>
           <div style="display:flex; gap:6px;">
             <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.exportCasesBackup()" title="Download JSON Backup">
-              ⬇️ Export
+              ⬇️ <span data-i18n="btn_export">Export</span>
             </button>
             <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFileInput').click()" title="Import JSON File">
-              ⬆️ Import
+              ⬆️ <span data-i18n="btn_import">Import</span>
             </button>
             <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="window.oneHealthApp.importCasesBackup(event)">
             <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.navigateTo('screen')">
-              + New
+              + <span data-i18n="btn_new_case">New</span>
             </button>
           </div>
         </div>
 
         <!-- Search & Filters -->
         <div class="form-group">
-          <input type="text" class="form-control" id="caseSearchInput" placeholder="🔍 Search by name, tag ID, village, or condition...">
+          <input type="text" class="form-control" id="caseSearchInput" data-i18n-placeholder="search_cases_placeholder" placeholder="🔍 Search by name, tag ID, village, or condition...">
         </div>
 
         <div class="form-row" style="margin-bottom:14px;">
           <select class="form-control" id="caseFilterType">
-            <option value="">All Sectors (Human & Animal)</option>
-            <option value="human_general">Human General</option>
-            <option value="child_development">Child Development</option>
-            <option value="livestock">Livestock / Vet</option>
+            <option value="" data-i18n="all_sectors">All Sectors (Human & Animal)</option>
+            <option value="human_general" data-i18n="cat_human">Human General</option>
+            <option value="child_development" data-i18n="cat_child">Child Development</option>
+            <option value="livestock" data-i18n="cat_livestock">Livestock / Vet</option>
           </select>
           <select class="form-control" id="caseFilterRisk">
-            <option value="">All Risk Tiers</option>
+            <option value="" data-i18n="all_risk_tiers">All Risk Tiers</option>
             <option value="RED">RED (Critical)</option>
             <option value="ORANGE">ORANGE (Urgent)</option>
             <option value="YELLOW">YELLOW (Moderate)</option>
@@ -233,14 +233,14 @@
     <section id="view-portal" class="view-section">
       <div class="card-box">
         <div class="form-title-bar">
-          <h3 class="form-title" id="portalTitleHeader" data-i18n="nav_portal">Clinical Station</h3>
+          <h3 class="form-title" id="portalTitleHeader" data-i18n="portal_title">Clinical Station</h3>
           <div style="display:flex; gap:6px;">
             <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
-              📍 Update My Profile & Location
+              📍 <span data-i18n="btn_update_my_profile">Update My Profile & Location</span>
             </button>
           </div>
         </div>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;" id="portalDescHeader">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;" id="portalDescHeader" data-i18n="portal_desc">
           High-priority tele-triage queue for verified clinical diagnosis, prescription sign-off, and hospital referrals.
         </p>
 
@@ -252,10 +252,10 @@
     <section id="view-clinic_profile" class="view-section">
       <div class="card-box">
         <div class="form-title-bar">
-          <h3 class="form-title">👨‍⚕️ Doctor / Vet Registration & Location Profile</h3>
+          <h3 class="form-title" data-i18n="prof_form_title">👨‍⚕️ Doctor / Vet Registration & Location Profile</h3>
           <span class="badge badge-green" id="profileRoleBadge">Doctor Profile</span>
         </div>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;" data-i18n="prof_form_desc">
           Patients in Kopargaon and surrounding villages will discover your clinic, check consultation fees, education, and timings, and request tele-consultations.
         </p>
 
@@ -263,11 +263,11 @@
           <!-- Row 1: Personal & Education -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Full Name & Honorific *</label>
+              <label class="form-label" data-i18n="lbl_prof_name">Full Name & Honorific *</label>
               <input type="text" class="form-control" id="prof_name" required placeholder="e.g. Dr. Anand Kulkarni">
             </div>
             <div class="form-group">
-              <label class="form-label">Professional Title / Designation *</label>
+              <label class="form-label" data-i18n="lbl_prof_title">Professional Title / Designation *</label>
               <input type="text" class="form-control" id="prof_title" required placeholder="e.g. Senior Medical Officer / Pediatrician">
             </div>
           </div>
@@ -275,11 +275,11 @@
           <!-- Row 2: Medical Reg & Education -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Medical / Veterinary Council Reg. No. *</label>
+              <label class="form-label" data-i18n="lbl_prof_reg">Medical / Veterinary Council Reg. No. *</label>
               <input type="text" class="form-control" id="prof_reg_no" required placeholder="e.g. MMC-2011/05/1842 or MSVC-2009/4412">
             </div>
             <div class="form-group">
-              <label class="form-label">Education Degrees & College *</label>
+              <label class="form-label" data-i18n="lbl_prof_edu">Education Degrees & College *</label>
               <input type="text" class="form-control" id="prof_education" required placeholder="e.g. MBBS (BJMC Pune), MD (Medicine)">
             </div>
           </div>
@@ -287,11 +287,11 @@
           <!-- Row 3: Experience & Specialization -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Clinical Experience (Years) *</label>
+              <label class="form-label" data-i18n="lbl_prof_exp">Clinical Experience (Years) *</label>
               <input type="number" class="form-control" id="prof_experience" required placeholder="e.g. 14">
             </div>
             <div class="form-group">
-              <label class="form-label">Key Specialization / Expertise *</label>
+              <label class="form-label" data-i18n="lbl_prof_spec">Key Specialization / Expertise *</label>
               <input type="text" class="form-control" id="prof_specialization" required placeholder="e.g. Acute Febrile Illnesses & Diabetology">
             </div>
           </div>
@@ -299,11 +299,11 @@
           <!-- Row 4: Consultation Fee & Clinic Name -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Consultation Fee & Policy *</label>
+              <label class="form-label" data-i18n="lbl_prof_fee">Consultation Fee & Policy *</label>
               <input type="text" class="form-control" id="prof_fee" required placeholder="e.g. Free (Govt PHC) / ₹50 OPD / ₹100 Private">
             </div>
             <div class="form-group">
-              <label class="form-label">Hospital / Clinic / Dispensary Name *</label>
+              <label class="form-label" data-i18n="lbl_prof_clinic">Hospital / Clinic / Dispensary Name *</label>
               <input type="text" class="form-control" id="prof_clinic" required placeholder="e.g. Kopargaon Sub-District Hospital">
             </div>
           </div>
@@ -311,28 +311,28 @@
           <!-- Row 5: Village Area & Full Address -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Village / Town / Area *</label>
+              <label class="form-label" data-i18n="lbl_prof_area">Village / Town / Area *</label>
               <input type="text" class="form-control" id="prof_village" required placeholder="e.g. Kopargaon, Pohegaon, Dhamori, Shirdi">
             </div>
             <div class="form-group">
-              <label class="form-label">Postal PIN Code *</label>
+              <label class="form-label" data-i18n="lbl_prof_pincode">Postal PIN Code *</label>
               <input type="text" class="form-control" id="prof_pincode" required placeholder="e.g. 423601">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Full Street Address & Landmark *</label>
+            <label class="form-label" data-i18n="lbl_prof_addr">Full Street Address & Landmark *</label>
             <input type="text" class="form-control" id="prof_address" required placeholder="e.g. Station Road, Near Tehsil Office & Bus Stand, Kopargaon">
           </div>
 
           <!-- Row 6: Phone & WhatsApp -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Primary Consultation Phone Number *</label>
+              <label class="form-label" data-i18n="lbl_prof_phone">Primary Consultation Phone Number *</label>
               <input type="tel" class="form-control" id="prof_phone" required placeholder="e.g. +91 98230 55441">
             </div>
             <div class="form-group">
-              <label class="form-label">Emergency / WhatsApp Number</label>
+              <label class="form-label" data-i18n="lbl_prof_whatsapp">Emergency / WhatsApp Number</label>
               <input type="tel" class="form-control" id="prof_whatsapp" placeholder="e.g. +91 98230 55441">
             </div>
           </div>
@@ -340,24 +340,24 @@
           <!-- Row 7: OPD Timings & Languages -->
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">OPD Timings & Days *</label>
+              <label class="form-label" data-i18n="lbl_prof_timings">OPD Timings & Days *</label>
               <input type="text" class="form-control" id="prof_timings" required placeholder="e.g. Mon-Sat: 9:00 AM - 1:30 PM, 5:00 - 8:30 PM">
             </div>
             <div class="form-group">
-              <label class="form-label">Languages Spoken *</label>
+              <label class="form-label" data-i18n="lbl_prof_languages">Languages Spoken *</label>
               <input type="text" class="form-control" id="prof_languages" required placeholder="e.g. Marathi (मराठी), Hindi, English">
             </div>
           </div>
 
           <!-- Row 8: Facilities & Services -->
           <div class="form-group">
-            <label class="form-label">Available Facilities & Diagnostic Services</label>
+            <label class="form-label" data-i18n="lbl_prof_facilities">Available Facilities & Diagnostic Services</label>
             <input type="text" class="form-control" id="prof_facilities" placeholder="e.g. In-patient Beds, Oxygen, ECG, Rapid Blood Sugar, Dressing, Delivery Room / AI Insemination">
           </div>
 
           <div style="margin-top: 20px;">
             <button type="submit" class="btn btn-primary btn-block" style="font-size:16px; padding:14px;">
-              💾 Save & Publish Doctor Profile
+              💾 <span data-i18n="btn_save_profile">Save & Publish Doctor Profile</span>
             </button>
           </div>
         </form>
@@ -387,8 +387,8 @@
         <div class="role-card-select" onclick="window.oneHealthApp.setUserRole('patient')">
           <div class="role-card-icon">👤</div>
           <div>
-            <div class="role-card-title">Patient / Citizen / Health Worker</div>
-            <div class="role-card-desc">Screen family or livestock, check symptoms offline, view past medical/animal records, and find doctors near your village.</div>
+            <div class="role-card-title" data-i18n="role_patient_title">Patient / Citizen / Health Worker</div>
+            <div class="role-card-desc" data-i18n="role_patient_desc">Screen family or livestock, check symptoms offline, view past medical/animal records, and find doctors near your village.</div>
           </div>
         </div>
 
@@ -396,8 +396,8 @@
         <div class="role-card-select" onclick="window.oneHealthApp.setUserRole('doctor')">
           <div class="role-card-icon">🩺</div>
           <div>
-            <div class="role-card-title">Medical Doctor (MBBS / MD)</div>
-            <div class="role-card-desc">Review escalated human & child cases, verify risk, write e-prescriptions, and publish your clinic & fee profile.</div>
+            <div class="role-card-title" data-i18n="role_doctor_title">Medical Doctor (MBBS / MD)</div>
+            <div class="role-card-desc" data-i18n="role_doctor_desc">Review escalated human & child cases, verify risk, write e-prescriptions, and publish your clinic & fee profile.</div>
           </div>
         </div>
 
@@ -405,8 +405,8 @@
         <div class="role-card-select" onclick="window.oneHealthApp.setUserRole('vet')">
           <div class="role-card-icon">🐄</div>
           <div>
-            <div class="role-card-title">Veterinary Doctor (BVSc / Animal Care)</div>
-            <div class="role-card-desc">Review livestock disease reports (LSD, FMD, Mastitis), issue quarantine orders, and publish dispensary location.</div>
+            <div class="role-card-title" data-i18n="role_vet_title">Veterinary Doctor (BVSc / Animal Care)</div>
+            <div class="role-card-desc" data-i18n="role_vet_desc">Review livestock disease reports (LSD, FMD, Mastitis), issue quarantine orders, and publish dispensary location.</div>
           </div>
         </div>
       </div>
