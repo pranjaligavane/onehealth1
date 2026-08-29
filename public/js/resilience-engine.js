@@ -524,6 +524,12 @@ class OneHealthResilienceEngine {
       await window.oneHealthDB.saveDoctor(data);
     } else if (entityType === 'appointment') {
       await window.oneHealthDB.createConsultationRequest(data);
+    } else if (entityType === 'trust_claim') {
+      if (window.oneHealthDB.saveVerifiedClaim) await window.oneHealthDB.saveVerifiedClaim(data);
+    } else if (entityType === 'user_report') {
+      if (window.oneHealthDB.saveUserReport) await window.oneHealthDB.saveUserReport(data);
+    } else if (entityType === 'trusted_source') {
+      if (window.oneHealthDB.saveTrustedSource) await window.oneHealthDB.saveTrustedSource(data);
     }
   }
 

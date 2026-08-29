@@ -202,6 +202,10 @@ class OneHealthApp {
           <span class="nav-icon">📂</span>
           <span>${t('nav_cases')}</span>
         </button>
+        <button class="nav-item" data-view="trust_verify" onclick="window.oneHealthApp.navigateTo('trust_verify')">
+          <span class="nav-icon">🛡️</span>
+          <span>Verify Claim</span>
+        </button>
         <button class="nav-item" data-view="analytics" onclick="window.oneHealthApp.navigateTo('analytics')">
           <span class="nav-icon">📊</span>
           <span>${t('nav_analytics')}</span>
@@ -258,6 +262,10 @@ class OneHealthApp {
       this.loadAnalytics();
     } else if (viewId === 'resilience') {
       this.loadResilienceDashboard();
+    } else if (viewId === 'trust_verify') {
+      this.loadTrustVerifyView();
+    } else if (viewId === 'trust_admin') {
+      this.loadTrustAdminDashboard();
     } else if (viewId === 'screen') {
       this.renderScreeningForm();
     }
@@ -452,6 +460,15 @@ class OneHealthApp {
       const labelSpecialization = lang === 'mr' ? '🔬 विशेष तज्ज्ञता:' : lang === 'hi' ? '🔬 विशेषज्ञता:' : '🔬 Specialization:';
       const labelFacilities = lang === 'mr' ? '🛠️ उपलब्ध सुविधा:' : lang === 'hi' ? '🛠️ सुविधाएं:' : '🛠️ Facilities:';
 
+      let docVerifBadge = '';
+      if (doc.id && (doc.id.startsWith('DEMO-') || doc.is_demo)) {
+        docVerifBadge = `<span class="badge-doc-demo">DEMO PROFILE — NOT A REAL DOCTOR</span>`;
+      } else if (doc.verification_status === 'VERIFIED' || doc.medical_reg_no) {
+        docVerifBadge = `<span class="badge-doc-verified">🟢 VERIFIED PROFESSIONAL</span>`;
+      } else {
+        docVerifBadge = `<span class="badge-doc-pending">🟡 VERIFICATION PENDING</span>`;
+      }
+
       return `
         <div class="doctor-card">
           <div class="doc-header">
@@ -459,6 +476,7 @@ class OneHealthApp {
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                 <span style="font-size:20px;">${icon}</span>
                 <strong class="doc-name">${doc.name}</strong>
+                ${docVerifBadge}
                 ${doc.calculatedDistanceKm !== null ? `<span class="distance-badge">📍 ${doc.calculatedDistanceKm} km away</span>` : ''}
               </div>
               <div class="doc-title-sub">${doc.title || (isVet ? 'Veterinary Surgeon' : 'Medical Officer')}</div>
@@ -2571,6 +2589,495 @@ class OneHealthApp {
     } else {
       banner.style.display = 'none';
     }
+  }
+
+  // =========================================================================
+  // ONEHEALTH TRUST & VERIFICATION ENGINE CONTROLLERS ("The Bad Reading")
+  // =========================================================================
+
+  async loadTrustVerifyView() {
+    if (!window.oneHealthTrust) return;
+    await window.oneHealthTrust.init();
+
+    const statusBadge = document.getElementById('trustOnlineStatusBadge');
+    if (statusBadge) {
+      if (navigator.onLine) {
+        statusBadge.innerText = '🟢 Online (Live Registry Verification)';
+        statusBadge.className = 'badge badge-green';
+      } else {
+        statusBadge.innerText = '🟠 Offline Mode (Locally Cached Evidence)';
+        statusBadge.className = 'badge badge-yellow';
+      }
+    }
+  }
+
+  async verifyHealthClaim(customText = null) {
+    if (!window.oneHealthTrust) return;
+    const input = document.getElementById('trustClaimInput');
+    const text = customText || (input ? input.value : '');
+
+    if (!text || text.trim() === '') {
+      this.showToast('⚠️ Please paste a health message or advisory to verify.');
+      return;
+    }
+
+    this.showToast('🔍 Evaluating claim against authoritative clinical registries...');
+    try {
+      const record = await window.oneHealthTrust.verifyClaim(text);
+      this.renderVerificationResult(record);
+      this.showToast(`Verification completed: ${record.status}`);
+    } catch (err) {
+      this.showToast(`⚠️ Error: ${err.message}`);
+    }
+  }
+
+  renderVerificationResult(record) {
+    const container = document.getElementById('trustResultContainer');
+    if (!container) return;
+
+    container.style.display = 'block';
+
+    const statusConfig = {
+      VERIFIED: {
+        badgeClass: 'badge-trust-supported',
+        icon: '🟢',
+        title: 'VERIFIED / SUPPORTED',
+        tagline: 'Evidence from authoritative medical registries supports this claim.'
+      },
+      UNCERTAIN: {
+        badgeClass: 'badge-trust-uncertain',
+        icon: '🟡',
+        title: 'UNCERTAIN / INSUFFICIENT EVIDENCE',
+        tagline: 'Not enough reliable clinical evidence to confirm or refute. Do not treat as medical advice.'
+      },
+      CONTRADICTED: {
+        badgeClass: 'badge-trust-contradicted',
+        icon: '🔴',
+        title: 'CONTRADICTED / NOT SUPPORTED',
+        tagline: 'Reliable evidence and government health guidelines contradict this claim.'
+      }
+    };
+
+    const conf = statusConfig[record.status] || statusConfig.UNCERTAIN;
+
+    container.innerHTML = `
+      <!-- Coordinated Information Pattern Alert (if triggered) -->
+      ${record.coordinationAlert && record.coordinationAlert.isCoordinated ? `
+        <div class="trust-coordinated-box">
+          <div style="font-weight:900; font-size:14px; margin-bottom:4px;">
+            ⚠️ POSSIBLE COORDINATED INFORMATION PATTERN DETECTED
+          </div>
+          <div style="font-size:12px; line-height:1.5;">
+            <strong>${record.coordinationAlert.matchCount} similar submissions</strong> were received within the last ${record.coordinationAlert.windowMinutes} minutes.
+            The claim pattern has been flagged for moderation review and is <strong>NOT promoted as verified</strong>.
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- High-Risk Medical Warning Box (if high risk) -->
+      ${record.riskLevel === 'HIGH' ? `
+        <div class="trust-high-risk-box">
+          <div style="font-weight:900; font-size:14px; margin-bottom:4px;">
+            🔴 HIGH-RISK MEDICAL DIRECTIVE WARNING
+          </div>
+          <div style="font-size:12px; line-height:1.5;">
+            This statement contains advice that could disrupt ongoing medical care or cause immediate harm.
+            <strong>Do not stop, start, or modify treatment based solely on community forwards.</strong> Always consult a qualified medical professional.
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Main Result Card -->
+      <div class="dash-panel" style="margin-bottom:20px; border-color:${record.status === 'VERIFIED' ? '#86efac' : record.status === 'CONTRADICTED' ? '#fca5a5' : '#fde047'};">
+        <div class="dash-panel-header" style="background:#fff;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="${conf.badgeClass}">${conf.icon} ${conf.title}</span>
+            <span style="font-size:12px; color:var(--text-muted);">Provenance: <strong>${record.provenance}</strong></span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.openEvidenceModal('${record.id}')" style="font-weight:700;">
+            📜 View Evidence Trail
+          </button>
+        </div>
+
+        <div style="padding:18px;">
+          
+          <!-- Extracted Claim Summary -->
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+            <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase;">Extracted Clinical Claim:</div>
+            <div style="font-size:14px; font-weight:800; color:#0f172a; margin:4px 0;">"${record.extractedClaim}"</div>
+            <div style="font-size:12px; color:#475569; display:flex; gap:14px; flex-wrap:wrap; margin-top:6px;">
+              <span>📁 Topic: <strong>${record.topic}</strong></span>
+              <span>🏷️ Category: <strong>${record.category}</strong></span>
+              <span>⚠️ Risk Level: <strong style="color:${record.riskLevel === 'HIGH' ? '#dc2626' : record.riskLevel === 'MEDIUM' ? '#d97706' : '#16a34a'};">${record.riskLevel}</strong></span>
+            </div>
+          </div>
+
+          <!-- Multi-Factor Evaluation Metrics Grid -->
+          <div class="trust-factors-grid">
+            <div class="trust-factor-card">
+              <span class="trust-factor-label">Evidence Strength</span>
+              <span class="trust-factor-value">${record.evidenceStrength}</span>
+            </div>
+            <div class="trust-factor-card">
+              <span class="trust-factor-label">Source Authority</span>
+              <span class="trust-factor-value">${record.sourceAuthority}</span>
+            </div>
+            <div class="trust-factor-card">
+              <span class="trust-factor-label">Source Freshness</span>
+              <span class="trust-factor-value">${record.sourceFreshness}</span>
+            </div>
+            <div class="trust-factor-card">
+              <span class="trust-factor-label">Cross-Agreement</span>
+              <span class="trust-factor-value">${record.crossSourceAgreement}</span>
+            </div>
+          </div>
+
+          <!-- Clinical Summary & Action -->
+          <div style="margin:16px 0;">
+            <strong style="font-size:13px; color:#0f172a;">💡 Evidence Summary & Clinical Context:</strong>
+            <p style="font-size:13px; color:#334155; line-height:1.6; margin:6px 0 10px;">${record.summaryExplanation}</p>
+            
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:10px 14px; font-size:12px; color:#14532d;">
+              <strong>👨‍⚕️ Medical Guidance:</strong> ${record.clinicalAdvice}
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:12px; margin-top:14px; flex-wrap:wrap; gap:10px;">
+            <div style="font-size:11px; color:#64748b;">
+              Verified on: ${new Date(record.verifiedAt).toLocaleString()} ${record.isOfflineCached ? '• <em>(Verified against locally cached evidence)</em>' : '• <em>(Live verified)</em>'}
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.openUserReportModal('claim', '${record.id}')" style="color:#ef4444; border-color:#ef4444;">
+                🚩 Report Misleading Info
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.openEvidenceModal('${record.id}')">
+                📜 View ${record.sourcesChecked.length} Evidence Sources
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    container.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async openEvidenceModal(claimId) {
+    const modal = document.getElementById('evidenceTrailModal');
+    const body = document.getElementById('evidenceTrailModalBody');
+    if (!modal || !body) return;
+
+    let claim = null;
+    if (window.oneHealthDB && window.oneHealthDB.getVerifiedClaim) {
+      claim = await window.oneHealthDB.getVerifiedClaim(claimId);
+    }
+
+    if (!claim) {
+      // Fallback match in evidence knowledge base
+      claim = window.oneHealthTrust.evidenceKnowledgeBase[0];
+    }
+
+    body.innerHTML = `
+      <div style="padding:10px 4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+          <div>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a;">📜 Complete Evidence Trail & Citations</h3>
+            <span style="font-size:12px; color:#64748b;">Claim ID: ${claim.id || claimId} • No fabricated sources</span>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin-bottom:14px;">
+          <strong style="font-size:12px; color:#475569;">Target Claim:</strong>
+          <div style="font-size:13px; font-weight:800; color:#0f172a;">"${claim.extractedClaim || claim.claimStatement}"</div>
+        </div>
+
+        <h4 style="font-size:13px; font-weight:800; color:#334155; margin-bottom:8px;">Authoritative Sources & Clinical Registries Checked:</h4>
+
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${(claim.sourcesChecked || []).map((s, idx) => `
+            <div class="evidence-source-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="font-size:13px; color:#0f766e;">✓ Source ${idx + 1}: ${s.name}</strong>
+                <span class="badge ${s.agreement.includes('Support') ? 'badge-green' : s.agreement.includes('Contradict') ? 'badge-red' : 'badge-yellow'}" style="font-size:10px;">
+                  ${s.agreement}
+                </span>
+              </div>
+              <div style="font-size:11px; color:#64748b; margin-bottom:6px;">
+                Type: <strong>${s.sourceType}</strong> • Published/Updated: <strong>${s.publishedDate}</strong> • Last Verified: <strong>${s.lastVerifiedDate}</strong>
+              </div>
+              <div style="font-size:12px; color:#334155; line-height:1.5; background:#f8fafc; padding:8px 10px; border-radius:6px;">
+                <strong>Finding:</strong> ${s.finding}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px; margin-top:16px; font-size:12px;">
+          <strong style="color:#166534;">Conclusion:</strong>
+          <p style="margin:4px 0 0; color:#14532d;">${claim.summaryExplanation}</p>
+        </div>
+
+        <div style="text-align:right; margin-top:16px;">
+          <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.closeEvidenceModal()">Close Trail</button>
+        </div>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
+  }
+
+  closeEvidenceModal() {
+    const modal = document.getElementById('evidenceTrailModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  openUserReportModal(entityType = 'claim', entityId = 'UNKNOWN') {
+    const modal = document.getElementById('userReportModal');
+    const body = document.getElementById('userReportModalBody');
+    if (!modal || !body) return;
+
+    body.innerHTML = `
+      <div style="padding:10px 4px;">
+        <h3 style="margin:0 0 6px; font-size:16px; font-weight:800;">🚩 Report Information or Problematic Source</h3>
+        <p style="font-size:12px; color:#64748b; margin-bottom:14px;">Help protect rural communities from misleading medical claims and fake profiles.</p>
+
+        <form id="userReportForm" onsubmit="window.oneHealthApp.submitUserReportForm(event, '${entityType}', '${entityId}')">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label class="form-label" style="font-weight:700; font-size:12px;">Reason for Report *</label>
+            <select id="reportReasonSelect" class="form-control" required style="font-size:13px;">
+              <option value="Incorrect Medical Information">Incorrect Medical Information</option>
+              <option value="Misleading Treatment Claim">Misleading Treatment Claim</option>
+              <option value="Fake Doctor / Unverified Profile">Fake Doctor / Unverified Profile</option>
+              <option value="Fake Health Advisory">Fake Health Advisory</option>
+              <option value="Dangerous Dosage Recommendation">Dangerous Dosage Recommendation</option>
+              <option value="Suspicious Source / Potential Scam">Suspicious Source / Potential Scam</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label class="form-label" style="font-weight:700; font-size:12px;">Additional Context / Forward Details (Optional)</label>
+            <textarea id="reportDescriptionInput" rows="3" class="form-control" placeholder="Where did you see this? (e.g. Forwarded in village WhatsApp group)..." style="font-size:12px;"></textarea>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="window.oneHealthApp.closeUserReportModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" style="background:#ef4444; border-color:#ef4444; font-weight:800;">
+              Submit Report
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
+  }
+
+  closeUserReportModal() {
+    const modal = document.getElementById('userReportModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async submitUserReportForm(e, entityType, entityId) {
+    e.preventDefault();
+    const reason = document.getElementById('reportReasonSelect').value;
+    const desc = document.getElementById('reportDescriptionInput').value;
+
+    await window.oneHealthTrust.submitUserReport({
+      entityType,
+      entityId,
+      reportType: reason,
+      description: desc
+    });
+
+    this.closeUserReportModal();
+    this.showToast('✅ Thank you. This information has been flagged for moderation review.');
+  }
+
+  async runTrustDemoScenario(scenarioId) {
+    const scenarios = window.oneHealthTrust.getDemoScenarios();
+    const sc = scenarios.find(s => s.id === scenarioId);
+    if (!sc) return;
+
+    const input = document.getElementById('trustClaimInput');
+    if (input) input.value = sc.text;
+
+    if (sc.isBurstDemo) {
+      this.showToast('⚡ Simulating rapid duplicate submissions in 5-minute window...');
+      // Submit 3 times to trigger burst detector
+      await window.oneHealthTrust.verifyClaim(sc.text);
+      await window.oneHealthTrust.verifyClaim(sc.text);
+      const res = await window.oneHealthTrust.verifyClaim(sc.text);
+      this.renderVerificationResult(res);
+      this.showToast('⚠️ Coordinated Submission Burst Pattern Flagged!');
+    } else {
+      await this.verifyHealthClaim(sc.text);
+    }
+  }
+
+  async loadTrustAdminDashboard() {
+    if (!window.oneHealthTrust) return;
+    await window.oneHealthTrust.init();
+
+    const claims = (await window.oneHealthDB.getAllVerifiedClaims()) || [];
+    const sources = (await window.oneHealthDB.getTrustedSources()) || [];
+    const reports = (await window.oneHealthDB.getAllUserReports()) || [];
+
+    // 1. Calculate KPIs
+    const verifiedCount = claims.filter(c => c.status === 'VERIFIED').length;
+    const uncertainCount = claims.filter(c => c.status === 'UNCERTAIN').length;
+    const contradictedCount = claims.filter(c => c.status === 'CONTRADICTED').length;
+
+    const statTotal = document.getElementById('trustStatTotalClaims');
+    const statVerif = document.getElementById('trustStatVerified');
+    const statUncert = document.getElementById('trustStatUncertain');
+    const statContra = document.getElementById('trustStatContradicted');
+
+    if (statTotal) statTotal.innerText = claims.length;
+    if (statVerif) statVerif.innerText = verifiedCount;
+    if (statUncert) statUncert.innerText = uncertainCount;
+    if (statContra) statContra.innerText = contradictedCount;
+
+    // 2. Render Flagged Claims Table
+    const tableContainer = document.getElementById('trustClaimsTableContainer');
+    if (tableContainer) {
+      if (claims.length === 0) {
+        tableContainer.innerHTML = `<div class="dash-empty-state" style="padding:16px;">No claims evaluated yet. Use 'Verify Health Claim' to test.</div>`;
+      } else {
+        claims.sort((a, b) => new Date(b.verifiedAt) - new Date(a.verifiedAt));
+        tableContainer.innerHTML = `
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Extracted Claim</th>
+                <th>Topic / Risk</th>
+                <th>Status</th>
+                <th>Sources Checked</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${claims.slice(0, 15).map(c => `
+                <tr>
+                  <td>
+                    <strong>${c.extractedClaim}</strong>
+                    <div style="font-size:10px; color:#64748b;">ID: ${c.id} • ${new Date(c.verifiedAt).toLocaleTimeString()}</div>
+                  </td>
+                  <td>
+                    <div>${c.topic}</div>
+                    <span class="badge badge-${c.riskLevel === 'HIGH' ? 'red' : c.riskLevel === 'MEDIUM' ? 'orange' : 'green'}" style="font-size:10px;">${c.riskLevel} RISK</span>
+                  </td>
+                  <td>
+                    <span class="badge ${c.status === 'VERIFIED' ? 'badge-green' : c.status === 'CONTRADICTED' ? 'badge-red' : 'badge-yellow'}" style="font-size:10px;">
+                      ${c.status}
+                    </span>
+                  </td>
+                  <td>${(c.sourcesChecked || []).length} Registry Sources</td>
+                  <td>
+                    <div style="display:flex; gap:4px;">
+                      <button class="btn btn-outline btn-sm" style="padding:2px 6px; font-size:10px;" onclick="window.oneHealthApp.openEvidenceModal('${c.id}')">View</button>
+                      <button class="btn btn-outline btn-sm" style="padding:2px 6px; font-size:10px; color:#dc2626;" onclick="window.oneHealthApp.moderateClaim('${c.id}', 'CONTRADICTED')">Flag</button>
+                      <button class="btn btn-outline btn-sm" style="padding:2px 6px; font-size:10px; color:#16a34a;" onclick="window.oneHealthApp.moderateClaim('${c.id}', 'VERIFIED')">Approve</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    }
+
+    // 3. Render Trusted Sources Registry Viewer
+    const sourcesContainer = document.getElementById('trustedSourcesListContainer');
+    if (sourcesContainer) {
+      sourcesContainer.innerHTML = `
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Source Name</th>
+              <th>Organization</th>
+              <th>Authority Tier</th>
+              <th>Domain</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sources.map(s => `
+              <tr>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.organization}</td>
+                <td><span style="color:#0f766e; font-weight:800; font-size:11px;">${s.authorityLevel}</span></td>
+                <td><code>${s.domain}</code></td>
+                <td><span style="color:#059669; font-weight:800;">✓ Active</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // 4. Render User Community Reports
+    const reportsContainer = document.getElementById('trustUserReportsContainer');
+    if (reportsContainer) {
+      if (reports.length === 0) {
+        reportsContainer.innerHTML = `<div class="dash-empty-state" style="padding:16px;">No user reports submitted yet.</div>`;
+      } else {
+        reports.sort((a, b) => new Date(b.reportedAt) - new Date(a.reportedAt));
+        reportsContainer.innerHTML = `
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Report ID</th>
+                <th>Entity Type & ID</th>
+                <th>Reason</th>
+                <th>Description</th>
+                <th>Reported At</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reports.map(r => `
+                <tr>
+                  <td><strong>${r.id}</strong></td>
+                  <td>${r.entityType}: <code>${r.entityId}</code></td>
+                  <td><span style="color:#dc2626; font-weight:700;">${r.reportType}</span></td>
+                  <td>${r.description || '—'}</td>
+                  <td>${new Date(r.reportedAt).toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+    }
+  }
+
+  async moderateClaim(claimId, newStatus) {
+    if (!window.oneHealthDB) return;
+    const claim = await window.oneHealthDB.getVerifiedClaim(claimId);
+    if (!claim) return;
+
+    claim.status = newStatus;
+    claim.moderatedAt = new Date().toISOString();
+    await window.oneHealthDB.saveVerifiedClaim(claim);
+
+    // Save audit log
+    await window.oneHealthDB.saveTrustAuditLog({
+      action: 'CLAIM_MODERATED',
+      claimId: claimId,
+      newStatus: newStatus,
+      moderatedBy: 'System Reviewer'
+    });
+
+    // Journal in Resilience Recovery Engine
+    if (window.oneHealthResilience) {
+      await window.oneHealthResilience.logEvent('CLAIM_FLAGGED', 'trust_claim', claimId, claim);
+    }
+
+    this.showToast(`Claim ${claimId} status updated to ${newStatus}`);
+    await this.loadTrustAdminDashboard();
   }
 }
 

@@ -58,6 +58,9 @@
         <!-- System Diagnostics & Resilience Engine -->
         <button class="auth-settings-btn" onclick="window.oneHealthApp.navigateTo('resilience')" title="System Diagnostics & Resilience Engine">🛡️</button>
 
+        <!-- Trust & Verification ("The Bad Reading") -->
+        <button class="auth-settings-btn" onclick="window.oneHealthApp.navigateTo('trust_verify')" title="Verify Health Claims & Fight Misinformation" style="background:rgba(15,118,110,0.12); color:#0f766e; font-weight:700;">🔍 Verify Claim</button>
+
         <button id="btnSwitchRole" class="role-badge-btn" onclick="window.oneHealthApp.openRoleModal()" title="Switch Role (Doctor / Vet / Patient)">
           <span id="roleBadgeIcon">👤</span>
           <span id="roleBadgeText" data-i18n="role_patient">Patient</span>
@@ -765,6 +768,168 @@
       </div>
     </section>
 
+    <!-- 10. ONEHEALTH TRUST & VERIFICATION VIEW ("The Bad Reading" Challenge) -->
+    <section id="view-trust-verify" class="view-section">
+      <div class="container" style="max-width:960px; padding:20px 14px;">
+        
+        <!-- Header Banner -->
+        <div class="welcome-header" style="text-align:left; margin-bottom:20px; padding:20px; background:#fff; border-radius:16px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:24px;">🛡️</span>
+              <h2 style="font-size:18px; font-weight:900; margin:0; color:var(--text-main);">OneHealth Trust & Verification</h2>
+            </div>
+            <p style="font-size:13px; color:var(--text-muted); margin:4px 0 0;">
+              Real-Time Clinical Evidence Evaluation, Source Authority Verification & Misinformation Defense
+            </p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span id="trustOnlineStatusBadge" class="badge badge-green" style="font-size:11px; padding:4px 10px;">
+              🟢 Online (Live Registry Verification)
+            </span>
+            <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.navigateTo('trust_admin')" style="font-weight:700;">
+              📊 Moderation Dashboard
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. Claim Verification Input Card -->
+        <div class="dash-panel" style="margin-bottom:20px;">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">📝 Verify Health Information or Community Advisory</span>
+          </div>
+          <div style="padding:18px;">
+            <label style="font-size:13px; font-weight:700; color:#334155; margin-bottom:6px; display:block;">
+              Paste a health claim, WhatsApp forward, social media post, friend's advice, or treatment advisory below:
+            </label>
+            <textarea id="trustClaimInput" rows="3" class="form-control" style="resize:vertical; font-size:14px;"
+              placeholder="e.g. 'My WhatsApp group says neem juice completely cures dengue in 24 hours and you don\'t need to visit a doctor...'"></textarea>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; flex-wrap:wrap; gap:10px;">
+              <div style="font-size:12px; color:var(--text-muted);">
+                💡 Evaluates against MoHFW, ICMR, AIIMS, WHO & peer-reviewed clinical guidelines.
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('trustClaimInput').value=''">
+                  🧹 Clear
+                </button>
+                <button class="btn btn-primary" onclick="window.oneHealthApp.verifyHealthClaim()" style="font-weight:800; padding:8px 20px;">
+                  🔍 Verify Health Claim
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Controlled Live Demo Section (1-Click Test Scenarios) -->
+        <div class="dash-panel" style="margin-bottom:20px; background:#f8fafc;">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">⚡ Controlled Live Demo Mode (1-Click Test Scenarios)</span>
+            <span style="font-size:11px; color:var(--text-muted);">Real Evidence Engine</span>
+          </div>
+          <div style="padding:14px; display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
+            <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.runTrustDemoScenario('DEMO-MISINFO-01')" style="text-align:left; padding:8px; border-color:#fca5a5; background:#fff1f2; color:#991b1b; font-size:11px; font-weight:700;">
+              🔴 Contradicted Misinfo<br><span style="font-size:10px; font-weight:500; color:#475569;">"Neem cures dengue in 24h"</span>
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.runTrustDemoScenario('DEMO-SUPPORTED-02')" style="text-align:left; padding:8px; border-color:#86efac; background:#f0fdf4; color:#166534; font-size:11px; font-weight:700;">
+              🟢 Supported Guideline<br><span style="font-size:10px; font-weight:500; color:#475569;">"ORS + Zinc for diarrhea"</span>
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.runTrustDemoScenario('DEMO-UNCERTAIN-03')" style="text-align:left; padding:8px; border-color:#fde047; background:#fefce8; color:#854d0e; font-size:11px; font-weight:700;">
+              🟡 Uncertain Evidence<br><span style="font-size:10px; font-weight:500; color:#475569;">"Copper water for asthma"</span>
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.runTrustDemoScenario('DEMO-HIGHRISK-04')" style="text-align:left; padding:8px; border-color:#fca5a5; background:#fff1f2; color:#991b1b; font-size:11px; font-weight:700;">
+              ⚠️ High-Risk Directive<br><span style="font-size:10px; font-weight:500; color:#475569;">"Stop BP medication"</span>
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.runTrustDemoScenario('DEMO-BURST-05')" style="text-align:left; padding:8px; border-color:#fed7aa; background:#fff7ed; color:#9a3412; font-size:11px; font-weight:700;">
+              ⚡ Coordinated Burst<br><span style="font-size:10px; font-weight:500; color:#475569;">"Rapid chlorine dioxide claim"</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Dynamic Verification Results Container -->
+        <div id="trustResultContainer" style="display:none;"></div>
+
+      </div>
+    </section>
+
+    <!-- 11. INFORMATION TRUST & MODERATION DASHBOARD ("The Bad Reading" Admin) -->
+    <section id="view-trust-admin" class="view-section">
+      <div class="container" style="max-width:1040px; padding:20px 14px;">
+        
+        <!-- Admin Header -->
+        <div class="welcome-header" style="text-align:left; margin-bottom:20px; padding:20px; background:#fff; border-radius:16px; border:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:24px;">📊</span>
+              <h2 style="font-size:18px; font-weight:900; margin:0; color:var(--text-main);">Information Trust & Moderation Dashboard</h2>
+            </div>
+            <p style="font-size:13px; color:var(--text-muted); margin:4px 0 0;">
+              Misinformation Intelligence, Trusted Authority Registry, Community Reports & Audit Log
+            </p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.navigateTo('trust_verify')" style="font-weight:700;">
+            🔍 Verify New Claim →
+          </button>
+        </div>
+
+        <!-- KPI Metrics Row -->
+        <div class="dash-stats-row" style="margin-bottom:20px;">
+          <div class="dash-stat-card dash-stat-blue">
+            <div class="dash-stat-icon">📊</div>
+            <div class="dash-stat-value" id="trustStatTotalClaims">0</div>
+            <div class="dash-stat-label">Total Claims Evaluated</div>
+          </div>
+          <div class="dash-stat-card dash-stat-green">
+            <div class="dash-stat-icon">✓</div>
+            <div class="dash-stat-value" id="trustStatVerified">0</div>
+            <div class="dash-stat-label">Supported / Verified</div>
+          </div>
+          <div class="dash-stat-card dash-stat-orange">
+            <div class="dash-stat-icon">⏳</div>
+            <div class="dash-stat-value" id="trustStatUncertain">0</div>
+            <div class="dash-stat-label">Uncertain / Insufficient</div>
+          </div>
+          <div class="dash-stat-card dash-stat-red">
+            <div class="dash-stat-icon">🚨</div>
+            <div class="dash-stat-value" id="trustStatContradicted">0</div>
+            <div class="dash-stat-label">Contradicted / Flagged</div>
+          </div>
+        </div>
+
+        <!-- Flagged Claims Review Table -->
+        <div class="dash-panel" style="margin-bottom:20px;">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">🚩 Recent Verified Claims & Flagged Intelligence</span>
+            <button class="dash-panel-action" onclick="window.oneHealthApp.loadTrustAdminDashboard()">Refresh ↻</button>
+          </div>
+          <div id="trustClaimsTableContainer" style="padding:14px; overflow-x:auto;">
+            <div class="dash-empty-state" style="padding:16px;">Loading claims list...</div>
+          </div>
+        </div>
+
+        <!-- Trusted Sources Registry Viewer -->
+        <div class="dash-panel" style="margin-bottom:20px;">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">🏛️ Trusted Source Registry (Verified Authorities)</span>
+          </div>
+          <div id="trustedSourcesListContainer" style="padding:14px; overflow-x:auto;">
+            <div class="dash-empty-state" style="padding:16px;">Loading source registry...</div>
+          </div>
+        </div>
+
+        <!-- User Community Reports Queue -->
+        <div class="dash-panel" style="margin-bottom:20px;">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">👥 Community User Reports Queue</span>
+          </div>
+          <div id="trustUserReportsContainer" style="padding:14px; overflow-x:auto;">
+            <div class="dash-empty-state" style="padding:16px;">No user reports submitted yet.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
   <!-- FLOATING ACTION BUTTON: OFFLINE AI ASSISTANT -->
@@ -1000,9 +1165,26 @@
     <!-- Populated dynamically based on chosen role -->
   </nav>
 
+  <!-- Evidence Trail Modal -->
+  <div id="evidenceTrailModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:680px;">
+      <button class="modal-close-btn" onclick="window.oneHealthApp.closeEvidenceModal()" aria-label="Close evidence modal">✕</button>
+      <div id="evidenceTrailModalBody"></div>
+    </div>
+  </div>
+
+  <!-- User Reporting Modal -->
+  <div id="userReportModal" class="modal-overlay">
+    <div class="modal-content" style="max-width:540px;">
+      <button class="modal-close-btn" onclick="window.oneHealthApp.closeUserReportModal()" aria-label="Close report modal">✕</button>
+      <div id="userReportModalBody"></div>
+    </div>
+  </div>
+
   <!-- Application Scripts -->
   <script src="./js/db.js"></script>
   <script src="./js/resilience-engine.js"></script>
+  <script src="./js/trust-engine.js"></script>
   <script src="./js/i18n.js"></script>
   <script src="./js/voice.js"></script>
   <script src="./js/camera.js"></script>

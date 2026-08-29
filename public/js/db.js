@@ -7,7 +7,7 @@
 class OneHealthDB {
   constructor() {
     this.dbName = 'OneHealthOfflineDB';
-    this.version = 6;
+    this.version = 7;
     this.db = null;
   }
 
@@ -74,11 +74,43 @@ class OneHealthDB {
           kbStore.createIndex('condition', 'condition', { unique: false });
           kbStore.createIndex('source', 'source', { unique: false });
         }
+
+        // 9. ONEHEALTH TRUST & VERIFICATION STORES ("The Bad Reading")
+        if (!db.objectStoreNames.contains('trusted_sources')) {
+          const srcStore = db.createObjectStore('trusted_sources', { keyPath: 'sourceId' });
+          srcStore.createIndex('sourceType', 'sourceType', { unique: false });
+          srcStore.createIndex('authorityLevel', 'authorityLevel', { unique: false });
+          srcStore.createIndex('active', 'active', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('verified_claims')) {
+          const claimStore = db.createObjectStore('verified_claims', { keyPath: 'id' });
+          claimStore.createIndex('status', 'status', { unique: false });
+          claimStore.createIndex('riskLevel', 'riskLevel', { unique: false });
+          claimStore.createIndex('topic', 'topic', { unique: false });
+          claimStore.createIndex('verifiedAt', 'verifiedAt', { unique: false });
+          claimStore.createIndex('normalizedHash', 'normalizedHash', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('user_reports')) {
+          const rptStore = db.createObjectStore('user_reports', { keyPath: 'id' });
+          rptStore.createIndex('entityType', 'entityType', { unique: false });
+          rptStore.createIndex('entityId', 'entityId', { unique: false });
+          rptStore.createIndex('reportType', 'reportType', { unique: false });
+          rptStore.createIndex('reportedAt', 'reportedAt', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('trust_audit_log')) {
+          const auditStore = db.createObjectStore('trust_audit_log', { keyPath: 'id' });
+          auditStore.createIndex('action', 'action', { unique: false });
+          auditStore.createIndex('claimId', 'claimId', { unique: false });
+          auditStore.createIndex('timestamp', 'timestamp', { unique: false });
+        }
       };
 
       request.onsuccess = async (event) => {
         this.db = event.target.result;
-        console.log('[IndexedDB] Initialized successfully:', this.dbName);
+        console.log('[IndexedDB] Initialized successfully:', this.dbName, 'v' + this.version);
         await this.checkAndSeedInitialData();
         await this.checkAndSeedBodhiSKnowledge();
         resolve(this.db);
@@ -794,6 +826,102 @@ class OneHealthDB {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction('alerts', 'readonly');
       const req = tx.objectStore('alerts').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  }
+
+  // =========================================================================
+  // TRUST & VERIFICATION ENGINE DATA OPERATIONS ("The Bad Reading")
+  // =========================================================================
+
+  async saveTrustedSource(source) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('trusted_sources', 'readwrite');
+      tx.objectStore('trusted_sources').put(source);
+      tx.oncomplete = () => resolve(source);
+      tx.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async getTrustedSources() {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('trusted_sources', 'readonly');
+      const req = tx.objectStore('trusted_sources').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  }
+
+  async saveVerifiedClaim(claim) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('verified_claims', 'readwrite');
+      tx.objectStore('verified_claims').put(claim);
+      tx.oncomplete = () => resolve(claim);
+      tx.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async getVerifiedClaim(id) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('verified_claims', 'readonly');
+      const req = tx.objectStore('verified_claims').get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  }
+
+  async getAllVerifiedClaims() {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('verified_claims', 'readonly');
+      const req = tx.objectStore('verified_claims').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  }
+
+  async saveUserReport(report) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('user_reports', 'readwrite');
+      tx.objectStore('user_reports').put(report);
+      tx.oncomplete = () => resolve(report);
+      tx.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async getAllUserReports() {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('user_reports', 'readonly');
+      const req = tx.objectStore('user_reports').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  }
+
+  async saveTrustAuditLog(entry) {
+    await this.init();
+    entry.id = entry.id || `AUDIT-${Date.now().toString(36).toUpperCase()}`;
+    entry.timestamp = entry.timestamp || new Date().toISOString();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('trust_audit_log', 'readwrite');
+      tx.objectStore('trust_audit_log').put(entry);
+      tx.oncomplete = () => resolve(entry);
+      tx.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async getAllTrustAuditLogs() {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('trust_audit_log', 'readonly');
+      const req = tx.objectStore('trust_audit_log').getAll();
       req.onsuccess = () => resolve(req.result || []);
       req.onerror = () => resolve([]);
     });

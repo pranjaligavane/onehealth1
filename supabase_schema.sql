@@ -329,6 +329,77 @@ CREATE POLICY "Reviewers can update own reviews"
 CREATE POLICY "Allow anon insert sync logs" ON public.sync_logs FOR INSERT WITH CHECK (true);
 
 -- =============================================================================
+-- TRUST & VERIFICATION TABLES ("The Bad Reading" Challenge)
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS public.trusted_sources (
+    source_id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    organization VARCHAR(150),
+    source_type VARCHAR(80),
+    domain VARCHAR(100),
+    authority_level VARCHAR(50) DEFAULT 'TIER_1_GOVERNMENT',
+    last_verified DATE,
+    active BOOLEAN DEFAULT TRUE,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.verified_claims (
+    id VARCHAR(64) PRIMARY KEY,
+    original_text TEXT NOT NULL,
+    extracted_claim TEXT NOT NULL,
+    topic VARCHAR(100),
+    category VARCHAR(100),
+    status VARCHAR(30) DEFAULT 'UNCERTAIN', -- VERIFIED, UNCERTAIN, CONTRADICTED
+    risk_level VARCHAR(20) DEFAULT 'LOW', -- LOW, MEDIUM, HIGH
+    evidence_strength VARCHAR(50),
+    source_authority VARCHAR(100),
+    source_freshness VARCHAR(50),
+    cross_source_agreement VARCHAR(50),
+    summary_explanation TEXT,
+    clinical_advice TEXT,
+    sources_checked JSONB DEFAULT '[]'::jsonb,
+    provenance VARCHAR(100) DEFAULT 'User Submission',
+    is_offline_cached BOOLEAN DEFAULT FALSE,
+    verified_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.user_reports (
+    id VARCHAR(64) PRIMARY KEY,
+    entity_type VARCHAR(30) NOT NULL, -- claim, doctor, advisory
+    entity_id VARCHAR(64) NOT NULL,
+    report_type VARCHAR(80) NOT NULL,
+    description TEXT,
+    reported_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    status VARCHAR(30) DEFAULT 'PENDING_MODERATION',
+    resolved BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS public.trust_audit_log (
+    id VARCHAR(64) PRIMARY KEY,
+    action VARCHAR(50) NOT NULL,
+    claim_id VARCHAR(64),
+    details JSONB,
+    moderator VARCHAR(100),
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE public.trusted_sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.verified_claims ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_reports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.trust_audit_log ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read on trusted sources" ON public.trusted_sources FOR SELECT USING (true);
+CREATE POLICY "Allow public read on verified claims" ON public.verified_claims FOR SELECT USING (true);
+CREATE POLICY "Allow anon insert verified claims" ON public.verified_claims FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow anon insert user reports" ON public.user_reports FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public read on user reports" ON public.user_reports FOR SELECT USING (true);
+CREATE POLICY "Allow anon insert audit log" ON public.trust_audit_log FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public read on audit log" ON public.trust_audit_log FOR SELECT USING (true);
+
+-- =============================================================================
 -- SUPABASE REALTIME SUBSCRIPTIONS
 -- Enable realtime push events for new cases and active outbreak alerts
 -- =============================================================================
@@ -337,3 +408,5 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.cases;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.outbreak_alerts;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.doctor_profiles;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.verified_claims;
+
