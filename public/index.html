@@ -845,7 +845,7 @@
                 <button class="btn btn-outline btn-sm" onclick="document.getElementById('trustClaimInput').value=''">
                   🧹 Clear
                 </button>
-                <button class="btn btn-primary" onclick="window.oneHealthApp.verifyHealthClaim()" style="font-weight:800; padding:8px 20px;">
+                <button id="btnVerifyClaimAction" class="btn btn-primary" onclick="window.oneHealthApp.verifyHealthClaim()" style="font-weight:800; padding:8px 20px;">
                   🔍 Verify Health Claim
                 </button>
               </div>
@@ -853,7 +853,10 @@
           </div>
         </div>
 
-        <!-- 2. Controlled Live Demo Section (1-Click Test Scenarios) -->
+        <!-- 2. Dynamic Verification Results Container (Directly below input) -->
+        <div id="trustResultContainer" style="display:none; margin-bottom:20px;"></div>
+
+        <!-- 3. Controlled Live Demo Section (1-Click Test Scenarios) -->
         <div class="dash-panel" style="margin-bottom:20px; background:#f8fafc;">
           <div class="dash-panel-header">
             <span class="dash-panel-title">⚡ Controlled Live Demo Mode (1-Click Test Scenarios)</span>
@@ -877,9 +880,6 @@
             </button>
           </div>
         </div>
-
-        <!-- 3. Dynamic Verification Results Container -->
-        <div id="trustResultContainer" style="display:none;"></div>
 
       </div>
     </section>

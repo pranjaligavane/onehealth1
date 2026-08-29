@@ -2634,22 +2634,45 @@ class OneHealthApp {
   }
 
   async verifyHealthClaim(customText = null) {
-    if (!window.oneHealthTrust) return;
+    if (!window.oneHealthTrust) {
+      if (window.OneHealthTrustEngine) {
+        window.oneHealthTrust = new window.OneHealthTrustEngine();
+      }
+    }
+
     const input = document.getElementById('trustClaimInput');
     const text = customText || (input ? input.value : '');
 
     if (!text || text.trim() === '') {
-      this.showToast('⚠️ Please paste a health message or advisory to verify.');
+      this.showToast('⚠️ Please enter or paste a health message to verify.');
+      if (input) input.focus();
       return;
+    }
+
+    const btn = document.getElementById('btnVerifyClaimAction');
+    const origHtml = btn ? btn.innerHTML : '🔍 Verify Health Claim';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Evaluating Evidence...';
     }
 
     this.showToast('🔍 Evaluating claim against authoritative clinical registries...');
     try {
-      const record = await window.oneHealthTrust.verifyClaim(text);
-      this.renderVerificationResult(record);
-      this.showToast(`Verification completed: ${record.status}`);
+      if (window.oneHealthTrust && window.oneHealthTrust.verifyClaim) {
+        const record = await window.oneHealthTrust.verifyClaim(text);
+        this.renderVerificationResult(record);
+        this.showToast(`✅ Verification complete: ${record.status}`);
+      } else {
+        throw new Error('Trust Engine module unavailable.');
+      }
     } catch (err) {
+      console.error('[VerifyHealthClaim] Error:', err);
       this.showToast(`⚠️ Error: ${err.message}`);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
     }
   }
 

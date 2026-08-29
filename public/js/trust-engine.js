@@ -702,5 +702,6 @@ class OneHealthTrustEngine {
   }
 }
 
-// Global Singleton Instance
+// Global Singleton Instance & Class Definition
+window.OneHealthTrustEngine = OneHealthTrustEngine;
 window.oneHealthTrust = new OneHealthTrustEngine();
