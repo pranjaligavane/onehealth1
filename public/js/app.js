@@ -1411,6 +1411,57 @@ class OneHealthApp {
     this.renderCasesList(filtered);
   }
 
+  async filterCasesByScope(scope) {
+    this.navigateTo('cases');
+    await this.loadCasesList();
+
+    const searchInput = document.getElementById('caseSearchInput');
+    const riskFilter = document.getElementById('caseFilterRisk');
+
+    if (searchInput) searchInput.value = '';
+    
+    if (scope === 'critical') {
+      if (riskFilter) riskFilter.value = 'RED';
+      this.filterCases();
+      this.showToast('Filtered: Critical (RED) emergency cases');
+    } else if (scope === 'today') {
+      if (riskFilter) riskFilter.value = '';
+      const today = new Date().toDateString();
+      const filtered = (this.allCases || []).filter(c => {
+        const d = c.client_created_at || c.created_at || '';
+        return d && new Date(d).toDateString() === today;
+      });
+      this.renderCasesList(filtered);
+      this.showToast(`Showing ${filtered.length} case${filtered.length === 1 ? '' : 's'} recorded today`);
+    } else if (scope === 'pending') {
+      if (riskFilter) riskFilter.value = '';
+      const filtered = (this.allCases || []).filter(c => !c.reviews || c.reviews.length === 0);
+      this.renderCasesList(filtered);
+      this.showToast(`Showing ${filtered.length} case${filtered.length === 1 ? '' : 's'} pending clinical review`);
+    } else if (scope === 'synced') {
+      if (riskFilter) riskFilter.value = '';
+      const filtered = (this.allCases || []).filter(c => c.is_synced || c.sync_status === 'synced');
+      this.renderCasesList(filtered);
+      this.showToast(`Showing ${filtered.length} synced cloud record${filtered.length === 1 ? '' : 's'}`);
+    } else {
+      this.filterCases();
+    }
+  }
+
+  filterResilienceReport(filterType) {
+    const container = document.getElementById('resilienceReportContainer');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth' });
+      if (filterType === 'recovered') {
+        this.showToast('Showing: 100% Deterministically Restored Entities');
+      } else if (filterType === 'partial') {
+        this.showToast('Showing: Partially Recovered In-Flight Cases');
+      } else if (filterType === 'unrecoverable') {
+        this.showToast('Showing: Unrecoverable / Signature Check');
+      }
+    }
+  }
+
   renderCasesList(cases) {
     const container = document.getElementById('casesListContainer');
     if (!container) return;

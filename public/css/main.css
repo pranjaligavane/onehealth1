@@ -1958,13 +1958,25 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  cursor: default;
-  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0,0,0,0.04);
 }
-.dash-stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.dash-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  filter: brightness(0.98);
+}
+.dash-stat-card:active {
+  transform: scale(0.97);
+}
+.dash-stat-card * {
+  pointer-events: none;
+}
 .dash-stat-icon { font-size: 22px; }
 .dash-stat-value { font-size: 32px; font-weight: 900; line-height: 1; }
-.dash-stat-label { font-size: 12px; font-weight: 600; opacity: 0.75; }
+.dash-stat-label { font-size: 12px; font-weight: 700; opacity: 0.85; }
 .dash-stat-blue   { background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; }
 .dash-stat-red    { background: linear-gradient(135deg, #fff1f2, #fecdd3); color: #9f1239; }
 .dash-stat-orange { background: linear-gradient(135deg, #fff7ed, #fed7aa); color: #9a3412; }
@@ -2072,6 +2084,7 @@ body {
   color: var(--text-main);
   transition: all 0.2s;
   text-align: center;
+  user-select: none;
 }
 .dash-quick-btn:hover {
   border-color: var(--primary);
@@ -2079,6 +2092,12 @@ body {
   color: var(--primary);
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(15,118,110,0.12);
+}
+.dash-quick-btn:active {
+  transform: scale(0.95);
+}
+.dash-quick-btn * {
+  pointer-events: none;
 }
 .dash-quick-icon { font-size: 22px; }
 
