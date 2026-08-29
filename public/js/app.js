@@ -2800,7 +2800,7 @@ class OneHealthApp {
                 🚩 Report Misleading Info
               </button>
               <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.openEvidenceModal('${record.id}')">
-                📜 View ${record.sourcesChecked.length} Evidence Sources
+                📜 View ${(record.sourcesChecked || []).length} Evidence Sources
               </button>
             </div>
           </div>

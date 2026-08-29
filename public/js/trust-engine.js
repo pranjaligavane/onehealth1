@@ -355,7 +355,6 @@ class OneHealthTrustEngine {
    * tracks potential coordinated burst patterns, and produces an explainable trust report.
    */
   async verifyClaim(rawText, metadata = {}) {
-    await this.init();
     const text = (rawText || '').trim();
     if (!text) {
       throw new Error('Please enter a claim or message to verify.');
@@ -444,22 +443,14 @@ class OneHealthTrustEngine {
       normalizedHash: this._hashString(text.toLowerCase())
     };
 
-    // 6. Save to Primary Database (IndexedDB)
+    // 6. Save to Primary Database in background (Non-blocking)
     if (window.oneHealthDB && window.oneHealthDB.saveVerifiedClaim) {
-      try {
-        await window.oneHealthDB.saveVerifiedClaim(verificationRecord);
-      } catch (e) {
-        console.warn('[TrustEngine] Could not save claim to IndexedDB:', e.message);
-      }
+      window.oneHealthDB.saveVerifiedClaim(verificationRecord).catch(() => {});
     }
 
-    // 7. Hook into Disaster Recovery Journal (OneHealthRecoveryJournalDB)
-    if (window.oneHealthResilience) {
-      try {
-        await window.oneHealthResilience.logEvent('CLAIM_VERIFIED', 'trust_claim', verificationRecord.id, verificationRecord);
-      } catch (err) {
-        console.warn('[TrustEngine] Resilience journal hook failed:', err.message);
-      }
+    // 7. Hook into Disaster Recovery Journal in background (Non-blocking)
+    if (window.oneHealthResilience && window.oneHealthResilience.logEvent) {
+      window.oneHealthResilience.logEvent('CLAIM_VERIFIED', 'trust_claim', verificationRecord.id, verificationRecord).catch(() => {});
     }
 
     return verificationRecord;
