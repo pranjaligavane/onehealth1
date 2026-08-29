@@ -229,6 +229,7 @@ class OneHealthApp {
 
   // --- NAVIGATION & ROUTING ---
   navigateTo(viewId, pushHistory = true) {
+    if (!viewId) viewId = 'welcome';
     if (pushHistory && this.currentView && this.currentView !== viewId && this.currentView !== 'welcome') {
       this.viewHistory.push(this.currentView);
     }
@@ -253,9 +254,15 @@ class OneHealthApp {
       el.classList.remove('active');
     });
 
-    const target = document.getElementById(`view-${viewId}`) 
+    let target = document.getElementById(`view-${viewId}`) 
       || document.getElementById(`view-${viewId.replace(/_/g, '-')}`) 
       || document.getElementById(`view-${viewId.replace(/-/g, '_')}`);
+    
+    if (!target) {
+      console.warn(`[OneHealthApp] View 'view-${viewId}' not found, falling back.`);
+      target = document.getElementById('view-welcome') || document.getElementById('view-home');
+    }
+
     if (target) {
       target.classList.add('active');
       window.scrollTo(0, 0);
