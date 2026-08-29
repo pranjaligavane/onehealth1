@@ -79,8 +79,83 @@
   <!-- Main Views Container -->
   <main class="main-content">
 
+    <!-- 0. DEDICATED WELCOME & AUTHENTICATION LANDING VIEW -->
+    <section id="view-welcome" class="view-section active">
+      <div class="welcome-auth-container">
+        <!-- Hero Header -->
+        <div class="welcome-header">
+          <div class="welcome-logo">🌱</div>
+          <h1 class="welcome-title">ONEHEALTH AI</h1>
+          <p class="welcome-subtitle">Offline-First Rural Telemedicine, Pediatric Triage & Livestock Health</p>
+          <div class="welcome-badges">
+            <span class="welcome-pill">📶 Works 100% Offline</span>
+            <span class="welcome-pill">☁️ Auto-Syncs Online</span>
+            <span class="welcome-pill">🩺 Real Clinical Data</span>
+          </div>
+        </div>
+
+        <!-- Role Selection Cards -->
+        <div class="welcome-roles-grid">
+          <div class="welcome-role-card" onclick="window.oneHealthAuth.openForRole('doctor')">
+            <div class="welcome-role-icon">🩺</div>
+            <div class="welcome-role-name">Medical Doctor</div>
+            <div class="welcome-role-desc">MBBS / Specialists — Access triage queue, case histories & write clinical notes.</div>
+            <button class="welcome-role-btn">Login as Doctor →</button>
+          </div>
+
+          <div class="welcome-role-card" onclick="window.oneHealthAuth.openForRole('vet')">
+            <div class="welcome-role-icon">🐄</div>
+            <div class="welcome-role-name">Veterinarian</div>
+            <div class="welcome-role-desc">BVSc & AH — Livestock disease monitoring, herd triage & farm care.</div>
+            <button class="welcome-role-btn">Login as Vet →</button>
+          </div>
+
+          <div class="welcome-role-card" onclick="window.oneHealthAuth.openForRole('patient')">
+            <div class="welcome-role-icon">👤</div>
+            <div class="welcome-role-name">Patient / Citizen</div>
+            <div class="welcome-role-desc">Symptom check, local doctor discovery & child development screening.</div>
+            <button class="welcome-role-btn">Enter as Patient →</button>
+          </div>
+        </div>
+
+        <!-- Direct Quick Access & Sign In Card -->
+        <div class="welcome-auth-card">
+          <div class="welcome-card-header">
+            <h3>🔐 Sign In / Create Account</h3>
+            <p>Access your offline clinical records or sync with the cloud</p>
+          </div>
+
+          <div class="welcome-action-buttons">
+            <button class="btn btn-primary" style="width:100%; padding:14px; font-size:15px; font-weight:700;" onclick="window.oneHealthAuth.openModal('signin')">
+              🔑 Sign In with Email & Password
+            </button>
+            <button class="btn btn-outline" style="width:100%; padding:14px; font-size:15px; font-weight:700; margin-top:10px;" onclick="window.oneHealthAuth.openModal('signup')">
+              📝 Create New Account (Online & Offline)
+            </button>
+          </div>
+
+          <div class="welcome-divider">
+            <span>OR 1-CLICK INSTANT OFFLINE ACCESS</span>
+          </div>
+
+          <!-- 1-Click Fast Offline Login -->
+          <div class="welcome-quick-grid">
+            <button class="welcome-quick-btn" onclick="window.oneHealthSupabase.quickOfflineLogin('doctor', 'Dr. Anand Kulkarni (MBBS)')">
+              🩺 Demo Doctor Login
+            </button>
+            <button class="welcome-quick-btn" onclick="window.oneHealthSupabase.quickOfflineLogin('vet', 'Dr. Ramesh Patil (BVSc)')">
+              🐄 Demo Vet Login
+            </button>
+            <button class="welcome-quick-btn" onclick="window.oneHealthSupabase.quickOfflineLogin('patient', 'Rahul Deshmukh')">
+              👤 Demo Patient Login
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 1. HOME VIEW (Matching Reference Layout) -->
-    <section id="view-home" class="view-section active">
+    <section id="view-home" class="view-section">
       <!-- EDITORIAL HERO SECTION -->
       <div class="hero-editorial">
         <span class="hero-editorial-badge" data-i18n="hero_badge">OFFLINE-FIRST TELEMEDICINE & VETERINARY CARE</span>

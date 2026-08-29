@@ -38,16 +38,21 @@ class OneHealthApp {
     // 4. Initialize i18n
     window.oneHealthI18n.applyTranslations();
 
-    // 5. Initialize Supabase Auth (restores session & sets up listeners)
+    // 5. Initialize Supabase Auth & Offline Accounts
     if (window.oneHealthAuth) {
       window.oneHealthAuth.init();
     }
 
-    // 6. Apply User Role (from saved preference or auth)
-    if (!this.userRole) {
-      this.userRole = 'patient';
+    // 6. Check Auth State: If authenticated -> Go to Doctor/Patient dashboard; Else -> Welcome Login View
+    const isAuth = window.oneHealthSupabase && window.oneHealthSupabase.isAuthenticated();
+    if (isAuth) {
+      const user = window.oneHealthSupabase.currentUser;
+      const role = user?.role || this.userRole || 'patient';
+      this.userRole = role;
+      this.applyUserRole(role, true);
+    } else {
+      this.navigateTo('welcome');
     }
-    this.applyUserRole(this.userRole, false);
 
     // 7. Initial Data Load & Pending Sync Count
     await this.updatePendingSyncCount();
@@ -198,6 +203,11 @@ class OneHealthApp {
   // --- NAVIGATION & ROUTING ---
   navigateTo(viewId) {
     this.currentView = viewId;
+
+    const nav = document.getElementById('appBottomNav');
+    if (nav) {
+      nav.style.display = viewId === 'welcome' ? 'none' : 'flex';
+    }
 
     document.querySelectorAll('.nav-item').forEach(el => {
       el.classList.toggle('active', el.getAttribute('data-view') === viewId);

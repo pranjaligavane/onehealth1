@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    ONEHEALTH AI - Mobile-First High-Contrast Healthcare Design System
    Professional Clean White Healthcare UI & Local-First Architecture
    ========================================================================== */
@@ -2106,3 +2106,205 @@ body {
   .dash-greeting { font-size: 17px; }
   .dash-stat-value { font-size: 24px; }
 }
+
+/* ==========================================================================
+   WELCOME & AUTH LANDING PAGE
+   ========================================================================== */
+.welcome-auth-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.welcome-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.welcome-logo {
+  font-size: 44px;
+  margin-bottom: 8px;
+  animation: pulseLogo 2s infinite ease-in-out;
+}
+@keyframes pulseLogo {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.welcome-title {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.welcome-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 520px;
+  margin: 0 auto 16px;
+  line-height: 1.5;
+}
+
+.welcome-badges {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.welcome-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 50px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.welcome-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.welcome-role-card {
+  background: #ffffff;
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.welcome-role-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 12px 24px rgba(15,118,110,0.12);
+}
+
+.welcome-role-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+
+.welcome-role-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.welcome-role-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.welcome-role-btn {
+  background: #f8fafc;
+  border: 1.5px solid var(--border-color);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+}
+
+.welcome-role-card:hover .welcome-role-btn {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.welcome-auth-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+}
+
+.welcome-card-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.welcome-card-header h3 {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.welcome-card-header p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.welcome-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0 16px;
+}
+.welcome-divider::before,
+.welcome-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+.welcome-divider span {
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.welcome-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.welcome-quick-btn {
+  background: #f1f5f9;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.welcome-quick-btn:hover {
+  background: #e2e8f0;
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 680px) {
+  .welcome-roles-grid {
+    grid-template-columns: 1fr;
+  }
+  .welcome-quick-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
