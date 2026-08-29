@@ -17,7 +17,15 @@ class OneHealthSupabaseClient {
     this.supabaseUrl  = localStorage.getItem('onehealth_supabase_url')  || _SUPABASE_DEFAULT_URL;
     this.supabaseKey  = localStorage.getItem('onehealth_supabase_key')  || _SUPABASE_DEFAULT_KEY;
     this.client       = null;
-    this.currentUser  = null;   // { id, email, name, role, ... }
+    
+    // Restore cached user immediately for full offline support
+    const cachedUser = localStorage.getItem('onehealth_auth_user');
+    try {
+      this.currentUser = cachedUser ? JSON.parse(cachedUser) : null;
+    } catch (e) {
+      this.currentUser = null;
+    }
+
     this.session      = null;   // Supabase session object
     this._authListeners = [];
     this.initClient();
