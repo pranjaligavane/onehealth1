@@ -836,95 +836,176 @@ class OneHealthDB {
   // =========================================================================
 
   async saveTrustedSource(source) {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('trusted_sources', 'readwrite');
-      tx.objectStore('trusted_sources').put(source);
-      tx.oncomplete = () => resolve(source);
-      tx.onerror = (e) => reject(e.target.error);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('trusted_sources')) return source;
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('trusted_sources', 'readwrite');
+          tx.objectStore('trusted_sources').put(source);
+          tx.oncomplete = () => resolve(source);
+          tx.onerror = () => resolve(source);
+        } catch (e) {
+          resolve(source);
+        }
+      });
+    } catch (err) {
+      return source;
+    }
   }
 
   async getTrustedSources() {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('trusted_sources', 'readonly');
-      const req = tx.objectStore('trusted_sources').getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('trusted_sources')) return [];
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('trusted_sources', 'readonly');
+          const req = tx.objectStore('trusted_sources').getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    } catch (err) {
+      return [];
+    }
   }
 
   async saveVerifiedClaim(claim) {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('verified_claims', 'readwrite');
-      tx.objectStore('verified_claims').put(claim);
-      tx.oncomplete = () => resolve(claim);
-      tx.onerror = (e) => reject(e.target.error);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('verified_claims')) return claim;
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('verified_claims', 'readwrite');
+          tx.objectStore('verified_claims').put(claim);
+          tx.oncomplete = () => resolve(claim);
+          tx.onerror = () => resolve(claim);
+        } catch (e) {
+          resolve(claim);
+        }
+      });
+    } catch (err) {
+      return claim;
+    }
   }
 
   async getVerifiedClaim(id) {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('verified_claims', 'readonly');
-      const req = tx.objectStore('verified_claims').get(id);
-      req.onsuccess = () => resolve(req.result || null);
-      req.onerror = () => resolve(null);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('verified_claims')) return null;
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('verified_claims', 'readonly');
+          const req = tx.objectStore('verified_claims').get(id);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    } catch (err) {
+      return null;
+    }
   }
 
   async getAllVerifiedClaims() {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('verified_claims', 'readonly');
-      const req = tx.objectStore('verified_claims').getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('verified_claims')) return [];
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('verified_claims', 'readonly');
+          const req = tx.objectStore('verified_claims').getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    } catch (err) {
+      return [];
+    }
   }
 
   async saveUserReport(report) {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('user_reports', 'readwrite');
-      tx.objectStore('user_reports').put(report);
-      tx.oncomplete = () => resolve(report);
-      tx.onerror = (e) => reject(e.target.error);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('user_reports')) return report;
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('user_reports', 'readwrite');
+          tx.objectStore('user_reports').put(report);
+          tx.oncomplete = () => resolve(report);
+          tx.onerror = () => resolve(report);
+        } catch (e) {
+          resolve(report);
+        }
+      });
+    } catch (err) {
+      return report;
+    }
   }
 
   async getAllUserReports() {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('user_reports', 'readonly');
-      const req = tx.objectStore('user_reports').getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('user_reports')) return [];
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('user_reports', 'readonly');
+          const req = tx.objectStore('user_reports').getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    } catch (err) {
+      return [];
+    }
   }
 
   async saveTrustAuditLog(entry) {
-    await this.init();
-    entry.id = entry.id || `AUDIT-${Date.now().toString(36).toUpperCase()}`;
-    entry.timestamp = entry.timestamp || new Date().toISOString();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('trust_audit_log', 'readwrite');
-      tx.objectStore('trust_audit_log').put(entry);
-      tx.oncomplete = () => resolve(entry);
-      tx.onerror = (e) => reject(e.target.error);
-    });
+    try {
+      await this.init();
+      entry.id = entry.id || `AUDIT-${Date.now().toString(36).toUpperCase()}`;
+      entry.timestamp = entry.timestamp || new Date().toISOString();
+      if (!this.db || !this.db.objectStoreNames.contains('trust_audit_log')) return entry;
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('trust_audit_log', 'readwrite');
+          tx.objectStore('trust_audit_log').put(entry);
+          tx.oncomplete = () => resolve(entry);
+          tx.onerror = () => resolve(entry);
+        } catch (e) {
+          resolve(entry);
+        }
+      });
+    } catch (err) {
+      return entry;
+    }
   }
 
   async getAllTrustAuditLogs() {
-    await this.init();
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction('trust_audit_log', 'readonly');
-      const req = tx.objectStore('trust_audit_log').getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => resolve([]);
-    });
+    try {
+      await this.init();
+      if (!this.db || !this.db.objectStoreNames.contains('trust_audit_log')) return [];
+      return new Promise((resolve) => {
+        try {
+          const tx = this.db.transaction('trust_audit_log', 'readonly');
+          const req = tx.objectStore('trust_audit_log').getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    } catch (err) {
+      return [];
+    }
   }
 }
 

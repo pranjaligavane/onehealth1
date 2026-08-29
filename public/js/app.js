@@ -2680,6 +2680,9 @@ class OneHealthApp {
     const container = document.getElementById('trustResultContainer');
     if (!container) return;
 
+    this._cachedVerifiedClaims = this._cachedVerifiedClaims || {};
+    this._cachedVerifiedClaims[record.id] = record;
+
     container.style.display = 'block';
 
     const statusConfig = {
@@ -2814,15 +2817,15 @@ class OneHealthApp {
     const body = document.getElementById('evidenceTrailModalBody');
     if (!modal || !body) return;
 
-    let claim = null;
-    if (window.oneHealthDB && window.oneHealthDB.getVerifiedClaim) {
+    let claim = this._cachedVerifiedClaims ? this._cachedVerifiedClaims[claimId] : null;
+    if (!claim && window.oneHealthDB && window.oneHealthDB.getVerifiedClaim) {
       claim = await window.oneHealthDB.getVerifiedClaim(claimId);
     }
 
-    if (!claim) {
-      // Fallback match in evidence knowledge base
+    if (!claim && window.oneHealthTrust && window.oneHealthTrust.evidenceKnowledgeBase) {
       claim = window.oneHealthTrust.evidenceKnowledgeBase[0];
     }
+    if (!claim) return;
 
     body.innerHTML = `
       <div style="padding:10px 4px;">

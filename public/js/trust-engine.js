@@ -302,20 +302,27 @@ class OneHealthTrustEngine {
   }
 
   async init() {
-    // Listen to network status for auto-recheck
-    window.addEventListener('online', () => this.handleNetworkOnline());
-    window.addEventListener('offline', () => this.handleNetworkOffline());
-    this.isOnline = navigator.onLine;
+    if (this._isInitialized) return this;
+    try {
+      if (typeof window !== 'undefined' && window.addEventListener) {
+        window.addEventListener('online', () => this.handleNetworkOnline());
+        window.addEventListener('offline', () => this.handleNetworkOffline());
+      }
+      this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+      this._isInitialized = true;
 
-    // Seed trusted sources in IndexedDB if empty
-    await this._seedSourcesToIndexedDB();
+      // Seed trusted sources in IndexedDB in background (non-blocking)
+      this._seedSourcesToIndexedDB().catch(() => {});
+    } catch (e) {
+      this._isInitialized = true;
+    }
     return this;
   }
 
   handleNetworkOnline() {
     this.isOnline = true;
     console.log('[TrustEngine] Network is online. Checking pending revalidations...');
-    this.recheckPendingClaims();
+    try { this.recheckPendingClaims(); } catch (e) {}
   }
 
   handleNetworkOffline() {
@@ -324,10 +331,10 @@ class OneHealthTrustEngine {
   }
 
   async _seedSourcesToIndexedDB() {
-    if (!window.oneHealthDB) return;
+    if (!window.oneHealthDB || !window.oneHealthDB.getTrustedSources) return;
     try {
       const existing = await window.oneHealthDB.getTrustedSources();
-      if (existing.length === 0) {
+      if (!existing || existing.length === 0) {
         for (const src of this.defaultSources) {
           await window.oneHealthDB.saveTrustedSource(src);
         }
