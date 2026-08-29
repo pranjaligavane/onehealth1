@@ -1356,6 +1356,10 @@ class OneHealthApp {
     }
   }
 
+  async exportData() {
+    return this.exportCasesBackup();
+  }
+
   async importCasesBackup(event) {
     const file = event.target.files[0];
     if (!file) return;

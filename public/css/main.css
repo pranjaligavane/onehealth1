@@ -2509,4 +2509,18 @@ body {
   .resilience-btn-grid { grid-template-columns: 1fr; }
 }
 
+/* Incoming Video Call Pulse Ringing Animation */
+@keyframes pulseRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.6), 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+  70% {
+    box-shadow: 0 0 0 22px rgba(15, 118, 110, 0), 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0), 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+}
+
+
 
