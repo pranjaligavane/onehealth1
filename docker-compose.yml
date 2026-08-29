@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  onehealth-web:
+    build: .
+    container_name: onehealth_ai_app
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - DATABASE_URL=sqlite:///./data/onehealth.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
