@@ -83,6 +83,26 @@ body {
   gap: 10px;
 }
 
+.header-back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.header-back-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateX(-2px);
+}
+
 .brand-icon {
   font-size: 24px;
   background: rgba(255,255,255,0.15);

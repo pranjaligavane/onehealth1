@@ -15,6 +15,7 @@ class OneHealthApp {
     this.activeCase = null;
     this.allCases = [];
     this.lastScreeningResult = null;
+    this.viewHistory = [];
   }
 
   async init() {
@@ -201,8 +202,17 @@ class OneHealthApp {
   }
 
   // --- NAVIGATION & ROUTING ---
-  navigateTo(viewId) {
+  navigateTo(viewId, pushHistory = true) {
+    if (pushHistory && this.currentView && this.currentView !== viewId && this.currentView !== 'welcome') {
+      this.viewHistory.push(this.currentView);
+    }
     this.currentView = viewId;
+
+    // Toggle header Back button visibility
+    const backBtn = document.getElementById('btnHeaderBack');
+    if (backBtn) {
+      backBtn.style.display = (this.viewHistory.length > 0 && viewId !== 'welcome') ? 'inline-flex' : 'none';
+    }
 
     const nav = document.getElementById('appBottomNav');
     if (nav) {
@@ -239,6 +249,20 @@ class OneHealthApp {
       this.loadAnalytics();
     } else if (viewId === 'screen') {
       this.renderScreeningForm();
+    }
+  }
+
+  goBack() {
+    if (this.viewHistory.length > 0) {
+      const prev = this.viewHistory.pop();
+      this.navigateTo(prev, false);
+    } else {
+      const role = this.userRole || 'patient';
+      if (role === 'doctor' || role === 'vet') {
+        this.navigateTo('portal', false);
+      } else {
+        this.navigateTo('home', false);
+      }
     }
   }
 
