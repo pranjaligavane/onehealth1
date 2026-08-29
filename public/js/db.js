@@ -437,7 +437,12 @@ class OneHealthDB {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction('doctors_directory', 'readwrite');
       tx.objectStore('doctors_directory').put(docData);
-      tx.oncomplete = () => resolve(docData);
+      tx.oncomplete = () => {
+        if (window.oneHealthResilience) {
+          window.oneHealthResilience.logEvent('DOCTOR_SAVED', 'doctor', docData.id || ('DOC-' + Date.now()), docData).catch(() => {});
+        }
+        resolve(docData);
+      };
       tx.onerror = (e) => reject(e.target.error);
     });
   }
@@ -490,7 +495,12 @@ class OneHealthDB {
         status: 'pending',
         created_at: new Date().toISOString()
       });
-      tx.oncomplete = () => resolve(reqData);
+      tx.oncomplete = () => {
+        if (window.oneHealthResilience) {
+          window.oneHealthResilience.logEvent('APPOINTMENT_SAVED', 'appointment', reqData.id, reqData).catch(() => {});
+        }
+        resolve(reqData);
+      };
       tx.onerror = (e) => reject(e.target.error);
     });
   }
@@ -536,7 +546,12 @@ class OneHealthDB {
         });
       }
 
-      tx.oncomplete = () => resolve(caseData);
+      tx.oncomplete = () => {
+        if (window.oneHealthResilience && enqueueForSync) {
+          window.oneHealthResilience.logEvent('CASE_SAVED', 'case', caseData.id, caseData).catch(() => {});
+        }
+        resolve(caseData);
+      };
       tx.onerror = (e) => reject(e.target.error);
     });
   }

@@ -55,6 +55,9 @@
         <!-- Supabase Config -->
         <button class="auth-settings-btn" onclick="window.oneHealthAuth.openSettings()" title="Supabase Project Settings">⚙</button>
 
+        <!-- System Diagnostics & Resilience Engine -->
+        <button class="auth-settings-btn" onclick="window.oneHealthApp.navigateTo('resilience')" title="System Diagnostics & Resilience Engine">🛡️</button>
+
         <button id="btnSwitchRole" class="role-badge-btn" onclick="window.oneHealthApp.openRoleModal()" title="Switch Role (Doctor / Vet / Patient)">
           <span id="roleBadgeIcon">👤</span>
           <span id="roleBadgeText" data-i18n="role_patient">Patient</span>
@@ -76,6 +79,15 @@
       <button id="btnManualSync" class="sync-badge-btn" title="Click to trigger sync">
         🔄 <span id="pendingSyncCount" data-i18n="sync_now">Checking...</span>
       </button>
+    </div>
+
+    <!-- Global System Resilience & Integrity Status Banner -->
+    <div id="resilienceBanner" class="resilience-banner" style="display:none;" onclick="window.oneHealthApp.navigateTo('resilience')">
+      <div class="resilience-banner-content">
+        <span id="resilienceBannerIcon">⚠️</span>
+        <span id="resilienceBannerText">Data integrity failure detected — operating in Recovery Mode.</span>
+      </div>
+      <button class="resilience-banner-action">Diagnostics & Recovery →</button>
     </div>
   </header>
 
@@ -597,6 +609,148 @@
       <div id="analyticsDashboardContainer"></div>
     </section>
 
+    <!-- 8. SYSTEM RESILIENCE & BLACKOUT RECOVERY DASHBOARD -->
+    <section id="view-resilience" class="view-section">
+      <div class="card-box">
+        <div class="form-title-bar">
+          <div>
+            <h3 class="form-title">🛡️ System Resilience & Blackout Recovery Engine</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+              Independent append-only recovery journal, SHA-256 cryptographic verification & disaster recovery.
+            </p>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span id="resilienceEngineStateBadge" class="badge badge-green" style="font-size:12px; padding:6px 12px;">
+              🟢 SYSTEM OPERATIONAL
+            </span>
+          </div>
+        </div>
+
+        <!-- 1. Enterprise System Health Row -->
+        <div class="resilience-health-grid">
+          <div class="resilience-health-card">
+            <div class="health-card-header">
+              <span class="health-icon">💾</span>
+              <span class="health-title">Primary Database</span>
+            </div>
+            <div class="health-value" id="resPrimaryDbStatus">🟢 Healthy</div>
+            <div class="health-sub">IndexedDB: OneHealthOfflineDB</div>
+          </div>
+
+          <div class="resilience-health-card">
+            <div class="health-card-header">
+              <span class="health-icon">📜</span>
+              <span class="health-title">Recovery Journal</span>
+            </div>
+            <div class="health-value" id="resJournalDbStatus">🟢 Healthy (Append-Only)</div>
+            <div class="health-sub">Independent DB: OneHealthRecoveryJournalDB</div>
+          </div>
+
+          <div class="resilience-health-card">
+            <div class="health-card-header">
+              <span class="health-icon">☁️</span>
+              <span class="health-title">Cloud Sync</span>
+            </div>
+            <div class="health-value" id="resCloudSyncStatus">🟢 Online / Connected</div>
+            <div class="health-sub" id="resPendingOpsCount">0 Pending Operations</div>
+          </div>
+
+          <div class="resilience-health-card">
+            <div class="health-card-header">
+              <span class="health-icon">⏱️</span>
+              <span class="health-title">Last Integrity Check</span>
+            </div>
+            <div class="health-value" id="resLastCheckTime">Just now</div>
+            <div class="health-sub" id="resCheckDuration">SHA-256 Web Crypto</div>
+          </div>
+        </div>
+
+        <!-- 2. Statistics & Metrics Row -->
+        <div class="dash-stats-row" style="margin-top:16px;">
+          <div class="dash-stat-card dash-stat-blue">
+            <div class="dash-stat-icon">📊</div>
+            <div class="dash-stat-value" id="statMonitoredRecords">0</div>
+            <div class="dash-stat-label">Records Monitored</div>
+          </div>
+          <div class="dash-stat-card dash-stat-green">
+            <div class="dash-stat-icon">✓</div>
+            <div class="dash-stat-value" id="statRecoveredRecords">0</div>
+            <div class="dash-stat-label">Records Recovered</div>
+          </div>
+          <div class="dash-stat-card dash-stat-orange">
+            <div class="dash-stat-icon">⚠️</div>
+            <div class="dash-stat-value" id="statPartialRecords">0</div>
+            <div class="dash-stat-label">Partially Recovered</div>
+          </div>
+          <div class="dash-stat-card dash-stat-red">
+            <div class="dash-stat-icon">✕</div>
+            <div class="dash-stat-value" id="statUnrecoverableRecords">0</div>
+            <div class="dash-stat-label">Unrecoverable</div>
+          </div>
+        </div>
+
+        <!-- 3. Blackout Simulator & Action Controls (Safe Demo Panel) -->
+        <div class="resilience-action-panel">
+          <div class="action-panel-title">
+            <span>⚡ Disaster Simulation & Recovery Actions</span>
+            <span class="safe-demo-badge">🛡️ Controlled Demo Safe</span>
+          </div>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+            Simulate real data corruption or in-flight blackout interruptions to test deterministic reconstruction.
+          </p>
+
+          <div class="resilience-btn-grid">
+            <button class="resilience-btn btn-check" onclick="window.oneHealthApp.triggerIntegrityCheck()">
+              <span class="btn-icon">🔍</span>
+              <div class="btn-text">
+                <strong>Run Integrity Check</strong>
+                <span>Verify SHA-256 checksums across all stores</span>
+              </div>
+            </button>
+
+            <button class="resilience-btn btn-blackout" onclick="window.oneHealthApp.triggerBlackoutSimulation()">
+              <span class="btn-icon">💥</span>
+              <div class="btn-text">
+                <strong>Simulate Primary Blackout</strong>
+                <span>Corrupt demo records in primary DB</span>
+              </div>
+            </button>
+
+            <button class="resilience-btn btn-midop" onclick="window.oneHealthApp.triggerMidOperationBlackout()">
+              <span class="btn-icon">⚡</span>
+              <div class="btn-text">
+                <strong>Simulate Mid-Operation Failure</strong>
+                <span>Interrupt screening in-flight before AI report</span>
+              </div>
+            </button>
+
+            <button class="resilience-btn btn-recover" onclick="window.oneHealthApp.triggerRecoveryEngine()">
+              <span class="btn-icon">🔄</span>
+              <div class="btn-text">
+                <strong>Start Recovery Engine</strong>
+                <span>Reconstruct missing/corrupted data</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Recovery Report & Diagnostics Log Container -->
+        <div id="resilienceReportContainer" style="margin-top:20px;"></div>
+
+        <!-- 5. Append-Only Journal Live Viewer -->
+        <div class="dash-panel" style="margin-top:20px;">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">📜 Append-Only Recovery Journal (Live Log)</span>
+            <button class="dash-panel-action" onclick="window.oneHealthApp.refreshJournalLog()">Refresh Log ↻</button>
+          </div>
+          <div id="resilienceJournalLogContainer" class="dash-queue" style="max-height:300px;">
+            <div class="dash-empty-state" style="padding:16px;">Loading journal log...</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
   <!-- FLOATING ACTION BUTTON: OFFLINE AI ASSISTANT -->
@@ -834,6 +988,7 @@
 
   <!-- Application Scripts -->
   <script src="./js/db.js"></script>
+  <script src="./js/resilience-engine.js"></script>
   <script src="./js/i18n.js"></script>
   <script src="./js/voice.js"></script>
   <script src="./js/camera.js"></script>

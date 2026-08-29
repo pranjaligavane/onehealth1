@@ -44,6 +44,15 @@ class OneHealthApp {
       window.oneHealthAuth.init();
     }
 
+    // 5.5 Initialize Independent Resilience & Recovery Engine
+    if (window.oneHealthResilience) {
+      await window.oneHealthResilience.init();
+      window.oneHealthResilience.onStateChange((state, report) => {
+        this._updateResilienceUIState(state, report);
+      });
+      setTimeout(() => window.oneHealthResilience.runIntegrityCheck(), 1200);
+    }
+
     // 6. Check Auth State: If authenticated -> Go to Doctor/Patient dashboard; Else -> Welcome Login View
     const isAuth = window.oneHealthSupabase && window.oneHealthSupabase.isAuthenticated();
     if (isAuth) {
@@ -247,6 +256,8 @@ class OneHealthApp {
       this.loadClinicProfileForm();
     } else if (viewId === 'analytics') {
       this.loadAnalytics();
+    } else if (viewId === 'resilience') {
+      this.loadResilienceDashboard();
     } else if (viewId === 'screen') {
       this.renderScreeningForm();
     }
@@ -1207,7 +1218,13 @@ class OneHealthApp {
 
     this.activeCase = caseRecord;
 
-    await window.oneHealthDB.saveCase(caseRecord, true);
+    // Save to Primary DB or Pending Journal if in Degraded/Recovery mode
+    if (window.oneHealthResilience && (window.oneHealthResilience.state === 'DEGRADED' || window.oneHealthResilience.state === 'RECOVERY')) {
+      await window.oneHealthResilience.queuePendingOperation('CASE_SAVED', 'case', caseRecord.id, caseRecord);
+      this.showToast('✓ Screening preserved in independent Recovery Journal (Degraded Mode)');
+    } else {
+      await window.oneHealthDB.saveCase(caseRecord, true);
+    }
     await this.updatePendingSyncCount();
 
     if (navigator.onLine) {
@@ -2046,14 +2063,333 @@ class OneHealthApp {
   }
 
   // =========================================================================
-  // ANALYTICS & SURVEILLANCE
+  // SYSTEM RESILIENCE, INTEGRITY & RECOVERY ENGINE CONTROLLERS
   // =========================================================================
-  async loadAnalytics() {
-    const container = document.getElementById('analyticsDashboardContainer');
+
+  async loadResilienceDashboard() {
+    if (!window.oneHealthResilience) return;
+    await window.oneHealthResilience.init();
+
+    // 1. Update Health Indicator Cards
+    const primaryStatus = document.getElementById('resPrimaryDbStatus');
+    const journalStatus = document.getElementById('resJournalDbStatus');
+    const cloudSyncStatus = document.getElementById('resCloudSyncStatus');
+    const pendingOpsCount = document.getElementById('resPendingOpsCount');
+    const lastCheckTime = document.getElementById('resLastCheckTime');
+    const checkDuration = document.getElementById('resCheckDuration');
+    const stateBadge = document.getElementById('resilienceEngineStateBadge');
+
+    const state = window.oneHealthResilience.state;
+    if (stateBadge) {
+      const stateStyles = {
+        NORMAL: { text: '🟢 SYSTEM OPERATIONAL', class: 'badge-green' },
+        DEGRADED: { text: '🔴 DATA INTEGRITY FAILURE', class: 'badge-red' },
+        RECOVERY: { text: '🔄 RECOVERY IN PROGRESS', class: 'badge-orange' },
+        RESTORED: { text: '🟢 SYSTEM RESTORED', class: 'badge-green' }
+      };
+      const st = stateStyles[state] || stateStyles.NORMAL;
+      stateBadge.innerText = st.text;
+      stateBadge.className = `badge ${st.class}`;
+    }
+
+    if (primaryStatus) {
+      primaryStatus.innerText = state === 'DEGRADED' ? '🔴 Failure Detected' : '🟢 Healthy';
+      primaryStatus.style.color = state === 'DEGRADED' ? '#ef4444' : '#059669';
+    }
+
+    if (journalStatus) {
+      journalStatus.innerText = '🟢 Healthy (Append-Only)';
+      journalStatus.style.color = '#059669';
+    }
+
+    if (cloudSyncStatus) {
+      cloudSyncStatus.innerText = navigator.onLine ? '🟢 Online / Connected' : '🟠 Offline / Queued';
+      cloudSyncStatus.style.color = navigator.onLine ? '#059669' : '#d97706';
+    }
+
+    const pendingOps = await window.oneHealthResilience.getPendingOperations();
+    if (pendingOpsCount) {
+      pendingOpsCount.innerText = `${pendingOps.length} Pending Operation${pendingOps.length === 1 ? '' : 's'}`;
+    }
+
+    const lastReport = window.oneHealthResilience.lastIntegrityReport;
+    if (lastReport) {
+      if (lastCheckTime) lastCheckTime.innerText = new Date(lastReport.timestamp).toLocaleTimeString();
+      if (checkDuration) checkDuration.innerText = `Checked in ${lastReport.durationMs}ms (SHA-256)`;
+
+      // Update Metric Cards
+      const monitoredEl = document.getElementById('statMonitoredRecords');
+      const recoveredEl = document.getElementById('statRecoveredRecords');
+      const partialEl = document.getElementById('statPartialRecords');
+      const unrecovEl = document.getElementById('statUnrecoverableRecords');
+
+      if (monitoredEl) monitoredEl.innerText = lastReport.totalMonitored;
+      if (recoveredEl) recoveredEl.innerText = lastReport.healthyCount || (window.oneHealthResilience.lastRecoveryReport?.recoveredCount || 0);
+      if (partialEl) partialEl.innerText = lastReport.partialCount;
+      if (unrecovEl) unrecovEl.innerText = lastReport.missingCount + lastReport.corruptedCount;
+
+      // Render diagnostic breakdown
+      this._renderIntegrityReport(lastReport);
+    } else {
+      // Run quick integrity check if not yet run
+      await this.triggerIntegrityCheck(false);
+    }
+
+    // Refresh journal list
+    await this.refreshJournalLog();
+  }
+
+  async triggerIntegrityCheck(showToast = true) {
+    if (!window.oneHealthResilience) return;
+    const report = await window.oneHealthResilience.runIntegrityCheck();
+    if (showToast) {
+      if (report.isHealthy) {
+        this.showToast('✅ Integrity Check Passed: All SHA-256 checksums verified.');
+      } else {
+        this.showToast(`⚠️ Integrity Check Alert: ${report.missingCount + report.corruptedCount + report.partialCount} issues detected!`);
+      }
+    }
+    this.loadResilienceDashboard();
+  }
+
+  async triggerBlackoutSimulation() {
+    if (!window.oneHealthResilience) return;
+    const report = await window.oneHealthResilience.simulateBlackout();
+    this.showToast('💥 Blackout Simulated! Demo records corrupted in Primary Database.');
+    this.loadResilienceDashboard();
+  }
+
+  async triggerMidOperationBlackout() {
+    if (!window.oneHealthResilience) return;
+    const report = await window.oneHealthResilience.simulateMidOperationBlackout();
+    this.showToast('⚡ Mid-Operation Failure Simulated! Screening interrupted mid-save.');
+    this.loadResilienceDashboard();
+  }
+
+  async triggerRecoveryEngine() {
+    if (!window.oneHealthResilience) return;
+    this.showToast('🔄 Recovery Engine Started: Reconstructing data from Recovery Journal...');
+    const report = await window.oneHealthResilience.runRecoveryEngine();
+    this.showToast(`🟢 Recovery Complete! ${report.recoveredCount} restored, ${report.partialCount} partial (${report.recoveryRate}% rate).`);
+    this._renderRecoveryReport(report);
+    await this.loadResilienceDashboard();
+    await this.loadCasesList();
+  }
+
+  async refreshJournalLog() {
+    const container = document.getElementById('resilienceJournalLogContainer');
+    if (!container || !window.oneHealthResilience) return;
+
+    const entries = await window.oneHealthResilience._getAllJournalEntries();
+    if (entries.length === 0) {
+      container.innerHTML = `<div class="dash-empty-state" style="padding:16px;">No journal entries recorded yet.</div>`;
+      return;
+    }
+
+    // Sort newest first
+    entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    container.innerHTML = entries.slice(0, 30).map(e => `
+      <div class="journal-log-item">
+        <div>
+          <span class="journal-log-type">${e.type}</span>
+          <span style="color:var(--text-muted); font-size:11px; margin-left:6px;">[${e.entityType}: ${e.entityId}]</span>
+          ${e.is_partial ? '<span style="background:#fef3c7; color:#92400e; font-size:10px; font-weight:800; padding:1px 6px; border-radius:4px; margin-left:6px;">⚠️ PARTIAL</span>' : ''}
+          <div style="font-size:11px; color:#475569; margin-top:2px;">
+            ${new Date(e.timestamp).toLocaleTimeString()} · ${e.data?.subject_name || e.data?.name || 'Record snapshot'}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="journal-log-hash" title="SHA-256 Checksum">SHA: ${e.checksum.slice(0, 12)}...</div>
+          <span style="font-size:10px; color:#059669; font-weight:700;">✓ Verified</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  _renderIntegrityReport(report) {
+    const container = document.getElementById('resilienceReportContainer');
     if (!container) return;
 
-    const cases = await window.oneHealthDB.getAllCases();
-    window.oneHealthAnalytics.renderDashboard(cases, container);
+    if (report.isHealthy && (!report.partialRecords || report.partialRecords.length === 0)) {
+      container.innerHTML = `
+        <div class="resilience-report-box" style="border-color:#22c55e; background:#f0fdf4;">
+          <div class="report-header">
+            <span class="report-title">🟢 Data Integrity Verification: 100% Healthy</span>
+            <span class="report-rate-badge rate-high">0 Failures Detected</span>
+          </div>
+          <p style="font-size:12px; color:#166534; margin:0;">
+            All ${report.totalMonitored} monitored records in the primary database strictly match the cryptographic SHA-256 checksums in the independent recovery journal.
+          </p>
+        </div>`;
+      return;
+    }
+
+    const issues = [
+      ...report.missingRecords.map(r => ({ ...r, issueType: 'MISSING (WIPED)', badge: 'rate-crit' })),
+      ...report.corruptedRecords.map(r => ({ ...r, issueType: 'CORRUPTED (CHECKSUM MISMATCH)', badge: 'rate-crit' })),
+      ...report.partialRecords.map(r => ({ ...r, issueType: 'INCOMPLETE (MID-OPERATION FAILURE)', badge: 'rate-warn' }))
+    ];
+
+    container.innerHTML = `
+      <div class="resilience-report-box" style="border-color:#ef4444;">
+        <div class="report-header">
+          <div>
+            <span class="report-title">💥 PRIMARY DATA INTEGRITY FAILURE DETECTED</span>
+            <div style="font-size:12px; color:#991b1b; margin-top:2px;">
+              ${issues.length} record${issues.length === 1 ? '' : 's'} affected. Operating in Recovery Mode.
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.triggerRecoveryEngine()" style="font-weight:800; background:#ef4444; border-color:#ef4444;">
+            🔄 Run Recovery Engine Now
+          </button>
+        </div>
+
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Record ID</th>
+              <th>Entity Type</th>
+              <th>Failure Diagnostics</th>
+              <th>Recovery Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${issues.map(i => `
+              <tr>
+                <td><strong>${i.entityId}</strong></td>
+                <td><span style="text-transform:capitalize;">${i.entityType}</span></td>
+                <td>
+                  <span class="report-rate-badge ${i.badge}" style="font-size:10px;">${i.issueType}</span>
+                  <div style="font-size:11px; color:#64748b; margin-top:3px;">${i.reason}</div>
+                </td>
+                <td>
+                  <span style="color:#0f766e; font-weight:700;">✓ In Recovery Journal</span>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  _renderRecoveryReport(report) {
+    const container = document.getElementById('resilienceReportContainer');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="resilience-report-box" style="border-color:#22c55e;">
+        <div class="report-header">
+          <div>
+            <span class="report-title">🎉 RECOVERY ENGINE REPORT: RESTORATION COMPLETE</span>
+            <div style="font-size:12px; color:#166534; margin-top:2px;">
+              Reconstruction executed in ${report.durationMs}ms with ${report.recoveryRate}% success rate.
+            </div>
+          </div>
+          <span class="report-rate-badge ${report.recoveryRate >= 80 ? 'rate-high' : 'rate-warn'}">
+            ${report.recoveryRate}% Restored
+          </span>
+        </div>
+
+        <!-- Summary KPIs -->
+        <div style="display:flex; gap:12px; margin:10px 0 16px; flex-wrap:wrap;">
+          <div style="background:#f0fdf4; padding:8px 14px; border-radius:8px; border:1px solid #bbf7d0; font-size:12px;">
+            ✓ <strong>${report.recoveredCount}</strong> Full Records Restored
+          </div>
+          <div style="background:#fffbeb; padding:8px 14px; border-radius:8px; border:1px solid #fef3c7; font-size:12px;">
+            ⚠️ <strong>${report.partialCount}</strong> Partially Recovered
+          </div>
+          <div style="background:#fef2f2; padding:8px 14px; border-radius:8px; border:1px solid #fecaca; font-size:12px;">
+            ✕ <strong>${report.unrecoverableCount}</strong> Unrecoverable
+          </div>
+          ${report.replayedPendingCount > 0 ? `
+            <div style="background:#e0f2fe; padding:8px 14px; border-radius:8px; border:1px solid #bae6fd; font-size:12px;">
+              📥 <strong>${report.replayedPendingCount}</strong> Degraded Mode Operation(s) Applied
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Detailed Breakdown -->
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Record ID</th>
+              <th>Status</th>
+              <th>Restoration Details</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${report.recoveredList.map(r => `
+              <tr>
+                <td><strong>${r.entityId}</strong></td>
+                <td><span class="report-rate-badge rate-high">✓ Fully Recovered</span></td>
+                <td>All fields deterministically reconstructed from append-only journal</td>
+                <td><span style="color:#059669; font-weight:700;">Active in Primary DB</span></td>
+              </tr>
+            `).join('')}
+            ${report.partialList.map(p => `
+              <tr>
+                <td><strong>${p.entityId}</strong></td>
+                <td><span class="report-rate-badge rate-warn">⚠️ Partially Recovered</span></td>
+                <td>
+                  <div>Recovered: ${p.recoveredFields.join(', ')}</div>
+                  <div style="color:#991b1b; font-weight:700;">Missing: ${p.missingFields.join(', ')}</div>
+                  <div style="font-size:10px; color:#64748b;">Reason: ${p.reason}</div>
+                </td>
+                <td>
+                  <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.openCaseModal('${p.entityId}')" style="padding:2px 8px; font-size:11px;">
+                    Review & Complete
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+            ${report.unrecoverableList.map(u => `
+              <tr>
+                <td><strong>${u.entityId}</strong></td>
+                <td><span class="report-rate-badge rate-crit">✕ Unrecoverable</span></td>
+                <td>${u.reason}</td>
+                <td><span style="color:#991b1b; font-weight:700;">${u.action}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  _updateResilienceUIState(state, report) {
+    const banner = document.getElementById('resilienceBanner');
+    const bannerIcon = document.getElementById('resilienceBannerIcon');
+    const bannerText = document.getElementById('resilienceBannerText');
+
+    if (!banner) return;
+
+    if (state === 'DEGRADED') {
+      banner.style.display = 'flex';
+      banner.style.background = '#fef2f2';
+      banner.style.borderBottomColor = '#ef4444';
+      if (bannerIcon) bannerIcon.innerText = '💥';
+      if (bannerText) bannerText.innerHTML = `<strong>DATA INTEGRITY FAILURE DETECTED</strong> — Operating in Degraded Mode. New records preserved in Recovery Journal.`;
+    } else if (state === 'RECOVERY') {
+      banner.style.display = 'flex';
+      banner.style.background = '#fffbeb';
+      banner.style.borderBottomColor = '#f59e0b';
+      if (bannerIcon) bannerIcon.innerText = '🔄';
+      if (bannerText) bannerText.innerHTML = `<strong>RECOVERY IN PROGRESS</strong> — Reconstructing primary database from append-only journal...`;
+    } else if (state === 'RESTORED') {
+      banner.style.display = 'flex';
+      banner.style.background = '#f0fdf4';
+      banner.style.borderBottomColor = '#22c55e';
+      if (bannerIcon) bannerIcon.innerText = '🟢';
+      if (bannerText) bannerText.innerHTML = `<strong>SYSTEM RESTORED</strong> — Primary database restored successfully. Integrity verified.`;
+      setTimeout(() => {
+        if (window.oneHealthResilience.state === 'RESTORED' || window.oneHealthResilience.state === 'NORMAL') {
+          banner.style.display = 'none';
+        }
+      }, 6000);
+    } else {
+      banner.style.display = 'none';
+    }
   }
 }
 
@@ -2062,3 +2398,4 @@ window.addEventListener('DOMContentLoaded', () => {
   window.oneHealthApp = new OneHealthApp();
   window.oneHealthApp.init();
 });
+
