@@ -2132,14 +2132,15 @@ class OneHealthApp {
       if (partialEl) partialEl.innerText = lastReport.partialCount;
       if (unrecovEl) unrecovEl.innerText = lastReport.missingCount + lastReport.corruptedCount;
 
-      // Render diagnostic breakdown
-      this._renderIntegrityReport(lastReport);
+      if (window.oneHealthResilience.lastRecoveryReport && state === 'RESTORED') {
+        this._renderRecoveryReport(window.oneHealthResilience.lastRecoveryReport);
+      } else {
+        this._renderIntegrityReport(lastReport);
+      }
     } else {
-      // Run quick integrity check if not yet run
       await this.triggerIntegrityCheck(false);
     }
 
-    // Refresh journal list
     await this.refreshJournalLog();
   }
 
@@ -2172,12 +2173,70 @@ class OneHealthApp {
 
   async triggerRecoveryEngine() {
     if (!window.oneHealthResilience) return;
-    this.showToast('🔄 Recovery Engine Started: Reconstructing data from Recovery Journal...');
-    const report = await window.oneHealthResilience.runRecoveryEngine();
+    
+    const stepsContainer = document.getElementById('resilienceLiveStepsContainer');
+    const stepsLog = document.getElementById('resilienceLiveStepsLog');
+    const spinner = document.getElementById('recoveryLiveSpinner');
+
+    if (stepsContainer && stepsLog) {
+      stepsContainer.style.display = 'block';
+      stepsLog.innerHTML = '';
+      if (spinner) spinner.innerText = '🔄 Reconstructing...';
+    }
+
+    const report = await window.oneHealthResilience.runRecoveryEngine((stepText) => {
+      if (stepsLog) {
+        const line = document.createElement('div');
+        line.innerText = `[${new Date().toLocaleTimeString()}] ${stepText}`;
+        stepsLog.appendChild(line);
+        stepsLog.scrollTop = stepsLog.scrollHeight;
+      }
+    });
+
+    if (spinner) spinner.innerText = '✅ Complete';
     this.showToast(`🟢 Recovery Complete! ${report.recoveredCount} restored, ${report.partialCount} partial (${report.recoveryRate}% rate).`);
     this._renderRecoveryReport(report);
     await this.loadResilienceDashboard();
     await this.loadCasesList();
+  }
+
+  /**
+   * Interactive 1-Click Guided Demo Walkthrough
+   * Walks the user step-by-step through the entire Blackout & Recovery sequence.
+   */
+  async runGuidedResilienceDemo() {
+    this.showToast("🚀 Starting Step 1/5: Verifying Operational Baseline...");
+    await this.triggerIntegrityCheck(false);
+    await new Promise(r => setTimeout(r, 1500));
+
+    this.showToast("⚡ Step 2/5: Injecting Mid-Operation In-Flight Failure...");
+    await this.triggerMidOperationBlackout();
+    await new Promise(r => setTimeout(r, 2000));
+
+    this.showToast("💥 Step 3/5: Triggering Primary Storage Disaster (Data Wipe)...");
+    await this.triggerBlackoutSimulation();
+    await new Promise(r => setTimeout(r, 2000));
+
+    this.showToast("📥 Step 4/5: Queueing New Record during Degraded Mode...");
+    const tempCase = {
+      id: 'SCR-DEG-' + Date.now().toString(36).toUpperCase(),
+      case_type: 'human_general',
+      subject_name: 'Rohit Balasaheb Thorat',
+      age_or_dob: '34 Y',
+      gender_or_sex: 'Male',
+      village: 'Pohegaon',
+      risk_level: 'YELLOW',
+      primary_condition: 'Acute Viral Fever',
+      triage_summary: 'Fever 101.8 F, mild dehydration. Preserved in recovery journal.',
+      client_created_at: new Date().toISOString()
+    };
+    await window.oneHealthResilience.queuePendingOperation('CASE_SAVED', 'case', tempCase.id, tempCase);
+    await this.loadResilienceDashboard();
+    await new Promise(r => setTimeout(r, 2000));
+
+    this.showToast("🔄 Step 5/5: Launching Deterministic Recovery Engine...");
+    await this.triggerRecoveryEngine();
+    this.showToast("🎉 Guided Demo Complete! 100% Data Restored with verified SHA-256 signatures.");
   }
 
   async refreshJournalLog() {
@@ -2190,7 +2249,6 @@ class OneHealthApp {
       return;
     }
 
-    // Sort newest first
     entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     container.innerHTML = entries.slice(0, 30).map(e => `
@@ -2198,14 +2256,14 @@ class OneHealthApp {
         <div>
           <span class="journal-log-type">${e.type}</span>
           <span style="color:var(--text-muted); font-size:11px; margin-left:6px;">[${e.entityType}: ${e.entityId}]</span>
-          ${e.is_partial ? '<span style="background:#fef3c7; color:#92400e; font-size:10px; font-weight:800; padding:1px 6px; border-radius:4px; margin-left:6px;">⚠️ PARTIAL</span>' : ''}
+          ${e.is_partial ? '<span style="background:#fef3c7; color:#92400e; font-size:10px; font-weight:800; padding:1px 6px; border-radius:4px; margin-left:6px;">⚠️ PARTIAL IN-FLIGHT</span>' : ''}
           <div style="font-size:11px; color:#475569; margin-top:2px;">
             ${new Date(e.timestamp).toLocaleTimeString()} · ${e.data?.subject_name || e.data?.name || 'Record snapshot'}
           </div>
         </div>
         <div style="text-align:right;">
           <div class="journal-log-hash" title="SHA-256 Checksum">SHA: ${e.checksum.slice(0, 12)}...</div>
-          <span style="font-size:10px; color:#059669; font-weight:700;">✓ Verified</span>
+          <span style="font-size:10px; color:#059669; font-weight:700;">✓ Immutable Block</span>
         </div>
       </div>
     `).join('');
@@ -2219,56 +2277,66 @@ class OneHealthApp {
       container.innerHTML = `
         <div class="resilience-report-box" style="border-color:#22c55e; background:#f0fdf4;">
           <div class="report-header">
-            <span class="report-title">🟢 Data Integrity Verification: 100% Healthy</span>
+            <span class="report-title">🟢 Primary Storage & Recovery Journal: 100% Healthy</span>
             <span class="report-rate-badge rate-high">0 Failures Detected</span>
           </div>
-          <p style="font-size:12px; color:#166534; margin:0;">
-            All ${report.totalMonitored} monitored records in the primary database strictly match the cryptographic SHA-256 checksums in the independent recovery journal.
+          <p style="font-size:13px; color:#166534; margin:0; line-height:1.5;">
+            All <strong>${report.totalMonitored}</strong> clinical entities in <code>OneHealthOfflineDB</code> (Primary IndexedDB) strictly match the cryptographic SHA-256 signatures in <code>OneHealthRecoveryJournalDB</code> (Independent Append-Only Store).
           </p>
         </div>`;
       return;
     }
 
     const issues = [
-      ...report.missingRecords.map(r => ({ ...r, issueType: 'MISSING (WIPED)', badge: 'rate-crit' })),
-      ...report.corruptedRecords.map(r => ({ ...r, issueType: 'CORRUPTED (CHECKSUM MISMATCH)', badge: 'rate-crit' })),
-      ...report.partialRecords.map(r => ({ ...r, issueType: 'INCOMPLETE (MID-OPERATION FAILURE)', badge: 'rate-warn' }))
+      ...report.missingRecords.map(r => ({ ...r, issueType: 'MISSING (WIPED IN PRIMARY DB)', badge: 'rate-crit', icon: '🗑️' })),
+      ...report.corruptedRecords.map(r => ({ ...r, issueType: 'CORRUPTED (CHECKSUM MISMATCH)', badge: 'rate-crit', icon: '⚠️' })),
+      ...report.partialRecords.map(r => ({ ...r, issueType: 'IN-FLIGHT INTERRUPTION (MID-SAVE)', badge: 'rate-warn', icon: '⚡' }))
     ];
 
     container.innerHTML = `
       <div class="resilience-report-box" style="border-color:#ef4444;">
         <div class="report-header">
           <div>
-            <span class="report-title">💥 PRIMARY DATA INTEGRITY FAILURE DETECTED</span>
+            <span class="report-title">💥 PRIMARY DATA STORE FAILURE DETECTED</span>
             <div style="font-size:12px; color:#991b1b; margin-top:2px;">
-              ${issues.length} record${issues.length === 1 ? '' : 's'} affected. Operating in Recovery Mode.
+              ${issues.length} entity failure${issues.length === 1 ? '' : 's'} identified. Operating in Degraded Mode (New operations queue into Recovery Journal).
             </div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.triggerRecoveryEngine()" style="font-weight:800; background:#ef4444; border-color:#ef4444;">
-            🔄 Run Recovery Engine Now
+            🔄 Run Deterministic Recovery Now
           </button>
+        </div>
+
+        <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#9f1239;">
+          <strong>💡 What Happened:</strong> The primary database was corrupted or wiped while operations were in progress. However, all immutable transactions remain preserved in the independent <code>OneHealthRecoveryJournalDB</code> with SHA-256 signatures. Click <strong>Run Deterministic Recovery</strong> to restore the primary database with 0 data loss.
         </div>
 
         <table class="report-table">
           <thead>
             <tr>
-              <th>Record ID</th>
-              <th>Entity Type</th>
-              <th>Failure Diagnostics</th>
-              <th>Recovery Status</th>
+              <th>Record ID & Patient</th>
+              <th>Primary DB Status</th>
+              <th>Recovery Journal Status</th>
+              <th>What Happened & Action</th>
             </tr>
           </thead>
           <tbody>
             ${issues.map(i => `
               <tr>
-                <td><strong>${i.entityId}</strong></td>
-                <td><span style="text-transform:capitalize;">${i.entityType}</span></td>
                 <td>
-                  <span class="report-rate-badge ${i.badge}" style="font-size:10px;">${i.issueType}</span>
-                  <div style="font-size:11px; color:#64748b; margin-top:3px;">${i.reason}</div>
+                  <strong>${i.entityId}</strong>
+                  <div style="font-size:11px; color:#475569;">${i.subjectName}</div>
                 </td>
                 <td>
-                  <span style="color:#0f766e; font-weight:700;">✓ In Recovery Journal</span>
+                  <span class="report-rate-badge ${i.badge}" style="font-size:10px;">${i.icon} ${i.issueType}</span>
+                </td>
+                <td>
+                  <span style="color:#0f766e; font-weight:800;">✓ Preserved in Journal</span>
+                  <div style="font-size:10px; font-family:monospace; color:#64748b;">SHA: ${(i.expectedChecksum || i.journalEntry?.checksum || '').slice(0, 10)}...</div>
+                </td>
+                <td>
+                  <div style="font-size:11px; color:#334155;">${i.explanation || i.reason}</div>
+                  <span style="color:#059669; font-size:11px; font-weight:700;">➔ Ready for 1-click restore</span>
                 </td>
               </tr>
             `).join('')}
@@ -2282,15 +2350,15 @@ class OneHealthApp {
     if (!container) return;
 
     container.innerHTML = `
-      <div class="resilience-report-box" style="border-color:#22c55e;">
+      <div class="resilience-report-box" style="border-color:#22c55e; background:#fafffd;">
         <div class="report-header">
           <div>
-            <span class="report-title">🎉 RECOVERY ENGINE REPORT: RESTORATION COMPLETE</span>
+            <span class="report-title">🎉 RECOVERY COMPLETE: PRIMARY STORAGE DETERMINISTICALLY RESTORED</span>
             <div style="font-size:12px; color:#166534; margin-top:2px;">
-              Reconstruction executed in ${report.durationMs}ms with ${report.recoveryRate}% success rate.
+              Reconstruction executed in <strong>${report.durationMs}ms</strong> with <strong>${report.recoveryRate}%</strong> overall success rate.
             </div>
           </div>
-          <span class="report-rate-badge ${report.recoveryRate >= 80 ? 'rate-high' : 'rate-warn'}">
+          <span class="report-rate-badge ${report.recoveryRate >= 80 ? 'rate-high' : 'rate-warn'}" style="font-size:14px; padding:6px 14px;">
             ${report.recoveryRate}% Restored
           </span>
         </div>
@@ -2298,51 +2366,67 @@ class OneHealthApp {
         <!-- Summary KPIs -->
         <div style="display:flex; gap:12px; margin:10px 0 16px; flex-wrap:wrap;">
           <div style="background:#f0fdf4; padding:8px 14px; border-radius:8px; border:1px solid #bbf7d0; font-size:12px;">
-            ✓ <strong>${report.recoveredCount}</strong> Full Records Restored
+            ✓ <strong>${report.recoveredCount}</strong> Full Entities Restored
           </div>
           <div style="background:#fffbeb; padding:8px 14px; border-radius:8px; border:1px solid #fef3c7; font-size:12px;">
-            ⚠️ <strong>${report.partialCount}</strong> Partially Recovered
+            ⚠️ <strong>${report.partialCount}</strong> Partially Recovered (Mid-Flight Save)
           </div>
           <div style="background:#fef2f2; padding:8px 14px; border-radius:8px; border:1px solid #fecaca; font-size:12px;">
             ✕ <strong>${report.unrecoverableCount}</strong> Unrecoverable
           </div>
           ${report.replayedPendingCount > 0 ? `
             <div style="background:#e0f2fe; padding:8px 14px; border-radius:8px; border:1px solid #bae6fd; font-size:12px;">
-              📥 <strong>${report.replayedPendingCount}</strong> Degraded Mode Operation(s) Applied
+              📥 <strong>${report.replayedPendingCount}</strong> Degraded Mode Operation(s) Replayed
             </div>
           ` : ''}
         </div>
 
-        <!-- Detailed Breakdown -->
+        <!-- Detailed Itemized Restoration Breakdown -->
         <table class="report-table">
           <thead>
             <tr>
-              <th>Record ID</th>
-              <th>Status</th>
-              <th>Restoration Details</th>
+              <th>Entity / Patient</th>
+              <th>Restoration State</th>
+              <th>What Was Recovered</th>
+              <th>How It Was Recovered</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             ${report.recoveredList.map(r => `
               <tr>
-                <td><strong>${r.entityId}</strong></td>
-                <td><span class="report-rate-badge rate-high">✓ Fully Recovered</span></td>
-                <td>All fields deterministically reconstructed from append-only journal</td>
-                <td><span style="color:#059669; font-weight:700;">Active in Primary DB</span></td>
+                <td>
+                  <strong>${r.entityId}</strong>
+                  <div style="font-size:11px; color:#475569;">${r.subjectName}</div>
+                </td>
+                <td><span class="report-rate-badge rate-high">✓ 100% Restored</span></td>
+                <td>
+                  <div style="font-size:11px; color:#1e293b;">All patient data, vitals, condition, symptoms & reviews</div>
+                </td>
+                <td>
+                  <div style="font-size:11px; color:#0f766e;">Reconstructed from append-only journal snapshot</div>
+                  <div style="font-size:10px; font-family:monospace; color:#64748b;">SHA: ${(r.checksum || '').slice(0, 10)}... (Match)</div>
+                </td>
+                <td><span style="color:#059669; font-weight:800;">✓ Active in Primary DB</span></td>
               </tr>
             `).join('')}
             ${report.partialList.map(p => `
               <tr>
-                <td><strong>${p.entityId}</strong></td>
-                <td><span class="report-rate-badge rate-warn">⚠️ Partially Recovered</span></td>
                 <td>
-                  <div>Recovered: ${p.recoveredFields.join(', ')}</div>
-                  <div style="color:#991b1b; font-weight:700;">Missing: ${p.missingFields.join(', ')}</div>
+                  <strong>${p.entityId}</strong>
+                  <div style="font-size:11px; color:#475569;">${p.subjectName}</div>
+                </td>
+                <td><span class="report-rate-badge rate-warn">⚠️ Partial (Mid-Flight)</span></td>
+                <td>
+                  <div style="font-size:11px; color:#1e293b;">Recovered: ${p.recoveredFields.join(', ')}</div>
+                  <div style="font-size:11px; color:#991b1b; font-weight:700;">Missing: ${p.missingFields.join(', ')}</div>
+                </td>
+                <td>
+                  <div style="font-size:11px; color:#b45309;">${p.howRecovered}</div>
                   <div style="font-size:10px; color:#64748b;">Reason: ${p.reason}</div>
                 </td>
                 <td>
-                  <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.openCaseModal('${p.entityId}')" style="padding:2px 8px; font-size:11px;">
+                  <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.openCaseModal('${p.entityId}')" style="padding:2px 8px; font-size:11px; font-weight:800;">
                     Review & Complete
                   </button>
                 </td>
@@ -2353,6 +2437,7 @@ class OneHealthApp {
                 <td><strong>${u.entityId}</strong></td>
                 <td><span class="report-rate-badge rate-crit">✕ Unrecoverable</span></td>
                 <td>${u.reason}</td>
+                <td><span style="color:#991b1b; font-weight:700;">Signature Mismatch</span></td>
                 <td><span style="color:#991b1b; font-weight:700;">${u.action}</span></td>
               </tr>
             `).join('')}

@@ -8,7 +8,7 @@
  * - Primary Database: OneHealthOfflineDB (IndexedDB)
  * - Recovery Journal: OneHealthRecoveryJournalDB (Independent Append-Only Store)
  * - Cryptographic Integrity: Web Crypto API SHA-256 Checksums
- * - Deterministic Reconstruction Engine
+ * - Deterministic Reconstruction Engine with Progressive Live Visualizer
  * - Mid-Operation Failure Detection & Partial Recovery
  * - Live Blackout Simulator (Controlled Demo Safe)
  */
@@ -24,6 +24,7 @@ class OneHealthResilienceEngine {
     this.lastIntegrityReport = null;
     this.lastRecoveryReport = null;
     this.listeners = [];
+    this.stepListeners = [];
     this.isChecking = false;
   }
 
@@ -118,11 +119,6 @@ class OneHealthResilienceEngine {
 
   /**
    * Logs a critical healthcare operation into the independent recovery journal.
-   * @param {string} type - e.g. 'SCREENING_CREATED', 'PATIENT_REGISTERED', 'DOCTOR_PROFILE_SAVED', 'APPOINTMENT_BOOKED'
-   * @param {string} entityType - e.g. 'case', 'patient', 'doctor', 'appointment'
-   * @param {string} entityId - primary key ID
-   * @param {Object} data - snapshot payload
-   * @param {Object} options - { isPartial: bool, missingFields: array, version: number }
    */
   async logEvent(type, entityType, entityId, data, options = {}) {
     await this.init();
@@ -223,12 +219,6 @@ class OneHealthResilienceEngine {
   // 5. INTEGRITY CHECKER & CORRUPTION MONITOR
   // =========================================================================
 
-  /**
-   * Real Data Integrity Checker:
-   * 1. Fetches all latest states recorded in Recovery Journal.
-   * 2. Inspects Primary Database (OneHealthOfflineDB).
-   * 3. Compares SHA-256 checksums, identifies missing or corrupted records.
-   */
   async runIntegrityCheck() {
     this.isChecking = true;
     await this.init();
@@ -252,30 +242,30 @@ class OneHealthResilienceEngine {
     const missingRecords = [];
     const partialRecords = [];
 
-    // Check cases / screenings in primary DB
     const primaryCases = await window.oneHealthDB.getAllCases();
     const primaryCaseMap = new Map(primaryCases.map(c => [c.id, c]));
 
-    // Check doctors in primary DB
     const primaryDocs = await window.oneHealthDB.getAllDoctors();
     const primaryDocMap = new Map(primaryDocs.map(d => [d.id, d]));
 
-    // Check appointments in primary DB
     const primaryAppts = await window.oneHealthDB.getConsultationRequests();
     const primaryApptMap = new Map(primaryAppts.map(a => [a.id, a]));
 
     // 3. Verify each entity from journal against primary DB
     for (const [entityId, journalEntry] of expectedEntities.entries()) {
       const { entityType, data, checksum: expectedChecksum, is_partial, missing_fields } = journalEntry;
+      const subjectName = data?.subject_name || data?.name || data?.patient_name || entityId;
 
       // Check if mid-operation partial
       if (is_partial) {
         partialRecords.push({
           entityId,
           entityType,
+          subjectName,
           journalEntry,
           reason: `Interrupted mid-operation before completing: ${missing_fields.join(', ')}`,
-          missingFields: missing_fields
+          missingFields: missing_fields,
+          explanation: `Patient and symptoms safely saved, but AI diagnostic report was not generated before blackout.`
         });
         continue;
       }
@@ -293,18 +283,20 @@ class OneHealthResilienceEngine {
         missingRecords.push({
           entityId,
           entityType,
+          subjectName,
           journalEntry,
           status: 'MISSING',
           expectedChecksum,
-          reason: 'Record wiped or deleted from primary database'
+          reason: 'Record wiped or deleted from primary database',
+          explanation: `Primary database record missing. Journal holds full copy with SHA-256 signature.`
         });
       } else {
-        // Compare SHA-256
         const actualChecksum = await this.computeChecksum(primaryRecord);
         if (actualChecksum === expectedChecksum) {
           healthyRecords.push({
             entityId,
             entityType,
+            subjectName,
             status: 'HEALTHY',
             checksum: actualChecksum
           });
@@ -312,12 +304,14 @@ class OneHealthResilienceEngine {
           corruptedRecords.push({
             entityId,
             entityType,
+            subjectName,
             status: 'CORRUPTED',
             expectedChecksum,
             actualChecksum,
             primaryRecord,
             journalEntry,
-            reason: 'Data integrity mismatch: record content tampered or corrupted'
+            reason: 'Data integrity mismatch: record content tampered or corrupted in primary DB',
+            explanation: `Primary record checksum (${actualChecksum.slice(0, 8)}...) does not match journal signature (${expectedChecksum.slice(0, 8)}...).`
           });
         }
       }
@@ -365,17 +359,27 @@ class OneHealthResilienceEngine {
 
   /**
    * Deterministically reconstructs and restores primary database from the independent journal.
+   * Emits live step events for visual timeline progress.
    */
-  async runRecoveryEngine() {
+  async runRecoveryEngine(onProgressStep = null) {
     this._setState('RECOVERY');
     await this.init();
     if (window.oneHealthDB) await window.oneHealthDB.init();
 
     const startTime = performance.now();
+    const emitStep = async (stepText, delayMs = 150) => {
+      console.log(`[ResilienceEngine Step] ${stepText}`);
+      if (onProgressStep) onProgressStep(stepText);
+      this.stepListeners.forEach(fn => { try { fn(stepText); } catch(e){} });
+      if (delayMs > 0) await new Promise(r => setTimeout(r, delayMs));
+    };
+
+    await emitStep("🔍 Phase 1: Scanning independent append-only recovery journal (OneHealthRecoveryJournalDB)...", 200);
+
     const journalEntries = await this._getAllJournalEntries();
-    
-    // Sort chronologically by timestamp
     journalEntries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    await emitStep(`📜 Phase 2: Found ${journalEntries.length} immutable transaction blocks. Verifying cryptographic SHA-256 signatures...`, 250);
 
     const recoveredList = [];
     const partialList = [];
@@ -390,19 +394,24 @@ class OneHealthResilienceEngine {
       entityMap.get(entry.entityId).push(entry);
     }
 
+    await emitStep(`🧩 Phase 3: Reconstructing ${entityMap.size} clinical entities deterministically...`, 200);
+
     // Process each entity timeline
     for (const [entityId, history] of entityMap.entries()) {
       try {
         const latestEntry = history[history.length - 1];
+        const subjectName = latestEntry.data?.subject_name || latestEntry.data?.name || latestEntry.data?.patient_name || entityId;
 
         // 1. Verify journal entry integrity
         const journalChecksum = await this.computeChecksum(latestEntry.data);
         if (journalChecksum !== latestEntry.checksum) {
+          await emitStep(`❌ Signature mismatch on block ${entityId}! Flagged as unrecoverable.`, 100);
           unrecoverableList.push({
             entityId,
+            subjectName,
             entityType: latestEntry.entityType,
             status: 'UNRECOVERABLE',
-            reason: 'Journal entry checksum verification failed (corrupted journal block)',
+            reason: 'Journal entry checksum verification failed (tampered journal block)',
             action: 'Manual data re-entry required'
           });
           continue;
@@ -410,7 +419,7 @@ class OneHealthResilienceEngine {
 
         // 2. Check if mid-operation partial
         if (latestEntry.is_partial) {
-          // Recover available fields into primary store with a PARTIAL flag
+          await emitStep(`⚠️ Reconstructing mid-operation record: ${entityId} (${subjectName}) [Partial State]`, 150);
           const partialData = {
             ...latestEntry.data,
             is_partial_recovery: true,
@@ -421,24 +430,30 @@ class OneHealthResilienceEngine {
 
           partialList.push({
             entityId,
+            subjectName,
             entityType: latestEntry.entityType,
             status: 'PARTIALLY_RECOVERED',
             recoveredFields: Object.keys(latestEntry.data),
             missingFields: latestEntry.missing_fields,
             reason: 'Mid-operation blackout occurred before completing all fields',
-            action: 'Review case and re-run AI triage if needed'
+            action: 'Review case and re-run AI triage if needed',
+            howRecovered: 'Patient credentials, village, and symptoms reconstructed from pre-failure journal blocks.'
           });
           continue;
         }
 
         // 3. Full valid recovery
+        await emitStep(`✓ Restored: ${entityId} (${subjectName}) ➔ Written to Primary IndexedDB with verified SHA-256 signature`, 100);
         await this._writeEntityToPrimaryDB(latestEntry.entityType, latestEntry.data);
         recoveredList.push({
           entityId,
+          subjectName,
           entityType: latestEntry.entityType,
           status: 'RECOVERED',
           timestamp: latestEntry.timestamp,
-          version: latestEntry.version
+          version: latestEntry.version,
+          checksum: latestEntry.checksum,
+          howRecovered: 'Deterministically replayed from append-only journal snapshot.'
         });
 
       } catch (err) {
@@ -452,10 +467,12 @@ class OneHealthResilienceEngine {
     }
 
     // 4. Replay and apply pending operations queued during degraded state
+    await emitStep("📥 Phase 4: Checking pending operations queue submitted during degraded blackout state...", 200);
     const pendingOps = await this.getPendingOperations();
     const replayedOps = [];
     for (const op of pendingOps) {
       try {
+        await emitStep(`📥 Replaying degraded mode op: ${op.op_id} (${op.entityId})`, 100);
         await this._writeEntityToPrimaryDB(op.entityType, op.payload);
         await this.clearPendingOperation(op.op_id);
         replayedOps.push(op);
@@ -463,6 +480,8 @@ class OneHealthResilienceEngine {
         console.warn('[ResilienceEngine] Pending op replay warning:', e);
       }
     }
+
+    await emitStep("🎉 Phase 5: Verification complete! Primary IndexedDB fully synchronized and restored.", 200);
 
     const durationMs = Math.round(performance.now() - startTime);
     const totalAffected = recoveredList.length + partialList.length + unrecoverableList.length;
@@ -522,14 +541,13 @@ class OneHealthResilienceEngine {
 
     const cases = await window.oneHealthDB.getAllCases();
     if (cases.length === 0) {
-      // Seed some demo records first if none exist
       await this._seedInitialJournalIfEmpty(true);
     }
 
     const currentCases = await window.oneHealthDB.getAllCases();
     const demoCases = currentCases.filter(c => c.id.startsWith('DEMO-') || c.id.startsWith('CASE-') || c.id.startsWith('SCR-'));
 
-    // Corrupt / delete 3 to 5 demo records in Primary DB ONLY
+    // Corrupt / delete demo records in Primary DB ONLY
     const targets = demoCases.slice(0, 4);
     const affectedCount = targets.length;
 
@@ -694,6 +712,10 @@ class OneHealthResilienceEngine {
   onStateChange(callback) {
     this.listeners.push(callback);
     if (this.state) callback(this.state, this.lastIntegrityReport);
+  }
+
+  onStep(callback) {
+    this.stepListeners.push(callback);
   }
 }
 

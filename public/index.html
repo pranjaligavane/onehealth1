@@ -616,10 +616,13 @@
           <div>
             <h3 class="form-title">🛡️ System Resilience & Blackout Recovery Engine</h3>
             <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">
-              Independent append-only recovery journal, SHA-256 cryptographic verification & disaster recovery.
+              Dual-database architecture: Independent append-only recovery journal, SHA-256 cryptographic verification & disaster recovery.
             </p>
           </div>
-          <div style="display:flex; gap:6px; align-items:center;">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.runGuidedResilienceDemo()" style="font-weight:800; background:linear-gradient(135deg, #0f766e, #0284c7); border:none; box-shadow:0 2px 8px rgba(15,118,110,0.3);">
+              🚀 Guided Live Demo (Step-by-Step)
+            </button>
             <span id="resilienceEngineStateBadge" class="badge badge-green" style="font-size:12px; padding:6px 12px;">
               🟢 SYSTEM OPERATIONAL
             </span>
@@ -696,48 +699,59 @@
             <span class="safe-demo-badge">🛡️ Controlled Demo Safe</span>
           </div>
           <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
-            Simulate real data corruption or in-flight blackout interruptions to test deterministic reconstruction.
+            Simulate real primary store wipe or mid-operation blackout to observe how deterministic reconstruction works in real-time.
           </p>
 
           <div class="resilience-btn-grid">
             <button class="resilience-btn btn-check" onclick="window.oneHealthApp.triggerIntegrityCheck()">
               <span class="btn-icon">🔍</span>
               <div class="btn-text">
-                <strong>Run Integrity Check</strong>
-                <span>Verify SHA-256 checksums across all stores</span>
+                <strong>1. Run Integrity Check</strong>
+                <span>Verify SHA-256 signatures across all databases</span>
               </div>
             </button>
 
             <button class="resilience-btn btn-blackout" onclick="window.oneHealthApp.triggerBlackoutSimulation()">
               <span class="btn-icon">💥</span>
               <div class="btn-text">
-                <strong>Simulate Primary Blackout</strong>
-                <span>Corrupt demo records in primary DB</span>
+                <strong>2. Simulate Primary Blackout</strong>
+                <span>Wipes demo records in primary DB (Journal intact)</span>
               </div>
             </button>
 
             <button class="resilience-btn btn-midop" onclick="window.oneHealthApp.triggerMidOperationBlackout()">
               <span class="btn-icon">⚡</span>
               <div class="btn-text">
-                <strong>Simulate Mid-Operation Failure</strong>
-                <span>Interrupt screening in-flight before AI report</span>
+                <strong>3. Simulate Mid-Operation Failure</strong>
+                <span>Interrupts screening midway before AI report</span>
               </div>
             </button>
 
             <button class="resilience-btn btn-recover" onclick="window.oneHealthApp.triggerRecoveryEngine()">
               <span class="btn-icon">🔄</span>
               <div class="btn-text">
-                <strong>Start Recovery Engine</strong>
-                <span>Reconstruct missing/corrupted data</span>
+                <strong>4. Start Recovery Engine</strong>
+                <span>Deterministically rebuilds records from journal</span>
               </div>
             </button>
           </div>
         </div>
 
-        <!-- 4. Recovery Report & Diagnostics Log Container -->
+        <!-- 4. Live Step-by-Step Reconstruction Terminal Box -->
+        <div id="resilienceLiveStepsContainer" style="display:none; margin-top:20px;">
+          <div class="resilience-report-box" style="background:#0f172a; border-color:#334155; color:#f8fafc;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #334155; padding-bottom:8px;">
+              <span style="font-size:13px; font-weight:800; color:#38bdf8;">🔄 Deterministic Recovery Engine — Live Execution Stream</span>
+              <span id="recoveryLiveSpinner" style="font-size:12px; color:#94a3b8;">Processing...</span>
+            </div>
+            <div id="resilienceLiveStepsLog" style="font-family:monospace; font-size:12px; line-height:1.6; max-height:180px; overflow-y:auto; color:#cbd5e1;"></div>
+          </div>
+        </div>
+
+        <!-- 5. Recovery Report & Diagnostics Log Container -->
         <div id="resilienceReportContainer" style="margin-top:20px;"></div>
 
-        <!-- 5. Append-Only Journal Live Viewer -->
+        <!-- 6. Append-Only Journal Live Viewer -->
         <div class="dash-panel" style="margin-top:20px;">
           <div class="dash-panel-header">
             <span class="dash-panel-title">📜 Append-Only Recovery Journal (Live Log)</span>
