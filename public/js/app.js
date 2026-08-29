@@ -1333,9 +1333,21 @@ class OneHealthApp {
     const container = document.getElementById('casesListContainer');
     if (!container) return;
 
-    const cases = await window.oneHealthDB.getAllCases();
-    this.allCases = cases;
-    this.renderCasesList(cases);
+    const allCases = await window.oneHealthDB.getAllCases();
+    const role = this.userRole || 'doctor';
+
+    // If logged in as Doctor, default category filter to human cases; if Vet, default to livestock
+    const typeFilterSelect = document.getElementById('caseFilterType');
+    if (typeFilterSelect && (!typeFilterSelect.value || typeFilterSelect.value === '')) {
+      if (role === 'doctor') {
+        typeFilterSelect.value = 'human_general';
+      } else if (role === 'vet') {
+        typeFilterSelect.value = 'livestock';
+      }
+    }
+
+    this.allCases = allCases;
+    this.filterCases();
   }
 
   async exportCasesBackup() {
@@ -1677,7 +1689,15 @@ class OneHealthApp {
   }
 
   async _loadDashboardStats() {
-    const cases = await window.oneHealthDB.getAllCases();
+    const allCases = await window.oneHealthDB.getAllCases();
+    const role = this.userRole || 'doctor';
+
+    // Filter strictly by domain: Medical Doctor gets human/child cases, Vet gets livestock cases
+    const cases = allCases.filter(c => {
+      if (role === 'vet') return c.case_type === 'livestock';
+      return c.case_type === 'human_general' || c.case_type === 'child_development' || !c.case_type;
+    });
+
     const today = new Date().toDateString();
 
     const todayCases = cases.filter(c => {
@@ -1686,8 +1706,8 @@ class OneHealthApp {
     });
 
     const critical = cases.filter(c => c.risk_level === 'RED').length;
-    const pending  = cases.filter(c => !c.doctor_notes || c.doctor_notes.trim() === '').length;
-    const synced   = cases.filter(c => c.sync_status === 'synced').length;
+    const pending  = cases.filter(c => !c.reviews || c.reviews.length === 0).length;
+    const synced   = cases.filter(c => c.is_synced || c.sync_status === 'synced').length;
 
     const animateCount = (el, target) => {
       if (!el) return;
@@ -1784,7 +1804,14 @@ class OneHealthApp {
     const container = document.getElementById('dashTimeline');
     if (!container) return;
 
-    const cases = await window.oneHealthDB.getAllCases();
+    const allCases = await window.oneHealthDB.getAllCases();
+    const role = this.userRole || 'doctor';
+    
+    // Filter strictly by doctor vs vet role
+    const cases = allCases.filter(c => {
+      if (role === 'vet') return c.case_type === 'livestock';
+      return c.case_type === 'human_general' || c.case_type === 'child_development' || !c.case_type;
+    });
     const today = new Date().toDateString();
 
     const todayCases = cases
