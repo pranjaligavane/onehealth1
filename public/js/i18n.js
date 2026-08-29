@@ -1,6 +1,6 @@
 /**
  * ONEHEALTH AI - Comprehensive Multilingual Translation Engine (EN, MR, HI)
- * Complete coverage across all views, dynamic templates, forms, hero, directory, and modals.
+ * Complete coverage across AI assistant, video consultations, GPS location, and recommendations.
  */
 
 const I18N_DICTIONARY = {
@@ -42,6 +42,13 @@ const I18N_DICTIONARY = {
     patient_banner_title: "📍 Need a Doctor or Vet in your Area?",
     patient_banner_desc: "View education, consultation fee, OPD timings, and call verified doctors in Kopargaon, Pohegaon, Dhamori, & nearby villages.",
     btn_find_nearby_docs: "Find Nearby Doctors ➔",
+
+    // AI Assistant
+    ai_assistant_btn: "💬 Offline AI Assistant",
+    ai_assistant_title: "OneHealth AI Health Assistant",
+    ai_assistant_sub: "100% On-Device Offline Symptom Guide",
+    ai_input_placeholder: "Describe symptoms (e.g. fever for 3 days)...",
+    btn_send: "Send",
 
     // Roles
     role_patient: "Patient / Citizen",
@@ -87,15 +94,18 @@ const I18N_DICTIONARY = {
     lbl_photo_capture: "Clinical Photo / Lesion Upload (Offline Compressed)",
     btn_run_screening: "Run Offline AI Screening & Save",
 
-    // Directory
+    // Directory & GPS
     dir_title: "Doctors & Vets in Your Area",
     dir_subtitle: "Verified medical doctors and veterinary dispensaries with complete education details, consultation fees, OPD timings, and contact numbers.",
+    btn_use_gps: "📍 Use My GPS Location",
+    btn_gps_active: "🟢 GPS Location Active",
     all_villages: "All Villages (Kopargaon Taluka)",
     all_specialists: "All Specialists",
     human_docs_only: "Human Doctors (MBBS/MD)",
     vets_only: "Veterinary Surgeons (BVSc)",
     btn_call_doc: "Call",
     btn_whatsapp_doc: "WhatsApp",
+    btn_video_consult: "Video Call",
     btn_consult_doc: "Start Screening & Consult",
 
     // Records
@@ -179,6 +189,13 @@ const I18N_DICTIONARY = {
     patient_banner_desc: "कोपरगाव, पोहेगाव, धामोरी व परिसरातील डॉक्टरांचे शिक्षण, फी, वेळ तपासा व थेट संपर्क साधा.",
     btn_find_nearby_docs: "जवळचे डॉक्टर शोधा ➔",
 
+    // AI Assistant
+    ai_assistant_btn: "💬 ऑफलाइन एआय सहाय्यक",
+    ai_assistant_title: "वनहेल्थ एआय आरोग्य सहाय्यक",
+    ai_assistant_sub: "१००% स्थानिक ऑफलाइन लक्षण मार्गदर्शक",
+    ai_input_placeholder: "लक्षणे सांगा (उदा. ३ दिवसांपासून ताप आहे)...",
+    btn_send: "पाठवा",
+
     // Roles
     role_patient: "रुग्ण / नागरिक",
     role_doctor: "डॉक्टर (MBBS)",
@@ -223,15 +240,18 @@ const I18N_DICTIONARY = {
     lbl_photo_capture: "जखम / त्वचेचा फोटो काढा (ऑफलाइन संकुचित)",
     btn_run_screening: "जतन करा व एआय तपासणी करा",
 
-    // Directory
+    // Directory & GPS
     dir_title: "आपल्या परिसरातील डॉक्टर व पशुवैद्यक",
     dir_subtitle: "शिक्षण, तपासणी फी, दवाखान्याची वेळ आणि मोबाईल नंबरसह पडताळणी केलेले अधिकृत डॉक्टर.",
+    btn_use_gps: "📍 माझे चालू स्थान (GPS) वापरा",
+    btn_gps_active: "🟢 GPS स्थान सक्रिय",
     all_villages: "सर्व गावे (कोपरगाव तालुका)",
     all_specialists: "सर्व तज्ज्ञ",
     human_docs_only: "मानवी डॉक्टर (MBBS/MD)",
     vets_only: "पशुवैद्यकीय डॉक्टर (BVSc)",
     btn_call_doc: "कॉल करा",
     btn_whatsapp_doc: "व्हॉट्सॲप",
+    btn_video_consult: "व्हिडिओ सल्ला",
     btn_consult_doc: "तपासणी सुरू करा व सल्ला घ्या",
 
     // Records
@@ -315,6 +335,13 @@ const I18N_DICTIONARY = {
     patient_banner_desc: "कोपरगांव, पोहेगांव, धामोरी व आसपास के डॉक्टरों की शिक्षा, फीस, समय देखें और सीधे संपर्क करें।",
     btn_find_nearby_docs: "नजदीकी डॉक्टर खोजें ➔",
 
+    // AI Assistant
+    ai_assistant_btn: "💬 ऑफलाइन एआई सहायक",
+    ai_assistant_title: "वनहेल्थ एआई स्वास्थ्य सहायक",
+    ai_assistant_sub: "100% ऑन-डिवाइस ऑफलाइन लक्षण गाइड",
+    ai_input_placeholder: "लक्षण बताएं (उदा. 3 दिन से बुखार है)...",
+    btn_send: "भेजें",
+
     // Roles
     role_patient: "मरीज / नागरिक",
     role_doctor: "डॉक्टर (MBBS)",
@@ -359,15 +386,18 @@ const I18N_DICTIONARY = {
     lbl_photo_capture: "लक्षण / त्वचा का फोटो लें (ऑफलाइन कंप्रेस्ड)",
     btn_run_screening: "सुरक्षित करें और एआई जांच करें",
 
-    // Directory
+    // Directory & GPS
     dir_title: "आपके क्षेत्र के डॉक्टर एवं पशु चिकित्सक",
     dir_subtitle: "शिक्षा, परामर्श शुल्क, क्लिनिक समय और फोन नंबर के साथ सत्यापित अधिकृत डॉक्टर।",
+    btn_use_gps: "📍 मेरा स्थान (GPS) उपयोग करें",
+    btn_gps_active: "🟢 GPS स्थान सक्रिय",
     all_villages: "सभी गांव (कोपरगांव तहसील)",
     all_specialists: "सभी विशेषज्ञ",
     human_docs_only: "मानव डॉक्टर (MBBS/MD)",
     vets_only: "पशु चिकित्सक (BVSc)",
     btn_call_doc: "कॉल करें",
     btn_whatsapp_doc: "व्हाट्सएप",
+    btn_video_consult: "वीडियो परामर्श",
     btn_consult_doc: "जांच शुरू करें और परामर्श लें",
 
     // Records

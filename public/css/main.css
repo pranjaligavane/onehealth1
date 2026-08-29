@@ -1,6 +1,6 @@
 /* ==========================================================================
    ONEHEALTH AI - Mobile-First High-Contrast Healthcare Design System
-   Editorial-Grade Hero Aesthetic & Comprehensive Medical/Vet Profiles
+   Professional Clean White Healthcare UI & Local-First Architecture
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -195,7 +195,7 @@ body {
 }
 
 /* ==========================================================================
-   EDITORIAL HERO SECTION (Matching User's Reference Layout)
+   EDITORIAL HERO SECTION
    ========================================================================== */
 .hero-editorial {
   background: #ffffff;
@@ -538,7 +538,7 @@ body {
 }
 
 /* ==========================================================================
-   ENHANCED DOCTOR & VET DIRECTORY CARDS (With Full Info)
+   DOCTOR DIRECTORY & EXPLAINABLE RECOMMENDATIONS
    ========================================================================== */
 .doctor-card {
   background: var(--bg-card);
@@ -548,6 +548,7 @@ body {
   margin-bottom: 16px;
   box-shadow: var(--shadow-sm);
   transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
 }
 .doctor-card:hover {
   border-color: #0284c7;
@@ -573,6 +574,54 @@ body {
   color: #0284c7;
   font-weight: 700;
   margin-top: 1px;
+}
+
+/* Doctor Availability Badges */
+.avail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.avail-available { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.avail-busy { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.avail-offline { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.avail-unknown { background: #f8fafc; color: #64748b; border: 1px dashed #94a3b8; }
+
+.distance-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Explainable Recommendation Banner */
+.recommendation-box {
+  background: #f0fdf4;
+  border-left: 4px solid #16a34a;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  font-size: 12.5px;
+  color: #14532d;
+}
+.recommendation-box strong {
+  color: #166534;
+}
+.recommendation-box ul {
+  padding-left: 18px;
+  margin-top: 4px;
+}
+.recommendation-box li {
+  margin-bottom: 2px;
 }
 
 .doc-tags-row {
@@ -653,6 +702,233 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.btn-video-call {
+  background: #0f766e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-video-call:hover {
+  background: #115e59;
+}
+
+/* ==========================================================================
+   OFFLINE AI ASSISTANT FLOATING FAB & CHAT DRAWER
+   ========================================================================== */
+.ai-assistant-fab {
+  position: fixed;
+  bottom: 80px;
+  right: 18px;
+  background: linear-gradient(135deg, #0f766e, #0284c7);
+  color: #ffffff;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 800;
+  box-shadow: 0 4px 15px rgba(15, 118, 110, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 250;
+  transition: transform 0.15s;
+}
+.ai-assistant-fab:hover {
+  transform: scale(1.04);
+}
+
+.ai-chat-drawer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  max-width: 440px;
+  height: 85vh;
+  max-height: 650px;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.2);
+  z-index: 400;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideDrawer 0.25s ease-out;
+}
+
+@keyframes slideDrawer {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.ai-chat-header {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ai-chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f8fafc;
+}
+
+.chat-bubble {
+  max-width: 85%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.chat-bubble.user {
+  background: #0f766e;
+  color: #ffffff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+.chat-bubble.assistant {
+  background: #ffffff;
+  color: #0f172a;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  border: 1px solid #e2e8f0;
+  box-shadow: var(--shadow-sm);
+}
+
+.ai-chat-input-bar {
+  padding: 10px 14px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ==========================================================================
+   WEBRTC VIDEO CONSULTATION ROOM
+   ========================================================================== */
+.video-room-container {
+  background: #0f172a;
+  border-radius: 16px;
+  max-width: 840px;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+
+.video-room-header {
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-stage {
+  position: relative;
+  height: 380px;
+  background: #020617;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remote-video-box {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.remote-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-waiting-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.9);
+  text-align: center;
+  padding: 20px;
+}
+
+.local-video-pip {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 120px;
+  height: 90px;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid #38bdf8;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.local-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-clinical-drawer {
+  background: #ffffff;
+  padding: 12px 18px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.video-controls-bar {
+  padding: 14px;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.btn-video-control {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-video-control:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+.btn-end-call {
+  background: #ef4444 !important;
 }
 
 /* --- FORMS & CONTROLS --- */
@@ -943,7 +1219,7 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 200;
+  z-index: 500;
   align-items: center;
   justify-content: center;
   padding: 16px;
@@ -1160,8 +1436,8 @@ body {
 .toast.active { display: block; }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translate(-50%, 10px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { transform: translate(-50%, 10px); }
+  to { transform: translate(-50%, 0); }
 }
 
 /* --- PRINT STYLES --- */
@@ -1171,7 +1447,7 @@ body {
     color: #000000;
     padding-bottom: 0;
   }
-  .app-header, .bottom-nav, .modal-close-btn, .btn, .header-controls, .role-modal-overlay {
+  .app-header, .bottom-nav, .modal-close-btn, .btn, .header-controls, .role-modal-overlay, .ai-assistant-fab, .ai-chat-drawer {
     display: none !important;
   }
   .modal-overlay {

@@ -1,12 +1,13 @@
 /**
- * ONEHEALTH AI - Offline IndexedDB Database Layer & Self-Contained Seeder
- * Operates 100% client-side with comprehensive doctor profiles (Education, Fee, Area, Reg #, Timings).
+ * ONEHEALTH AI - Offline IndexedDB Database Layer & Multi-Store Persistence Engine
+ * Supports Cases, Sync Queue, Media Blobs, Alerts, Settings, Doctors Directory with GPS & Availability,
+ * and Consultation Requests.
  */
 
 class OneHealthDB {
   constructor() {
     this.dbName = 'OneHealthOfflineDB';
-    this.version = 4;
+    this.version = 5;
     this.db = null;
   }
 
@@ -58,6 +59,13 @@ class OneHealthDB {
           docStore.createIndex('village', 'village', { unique: false });
           docStore.createIndex('specialization', 'specialization', { unique: false });
         }
+
+        // 7. Consultation Requests Store
+        if (!db.objectStoreNames.contains('consultation_requests')) {
+          const consultStore = db.createObjectStore('consultation_requests', { keyPath: 'id' });
+          consultStore.createIndex('doctor_id', 'doctor_id', { unique: false });
+          consultStore.createIndex('status', 'status', { unique: false });
+        }
       };
 
       request.onsuccess = async (event) => {
@@ -78,7 +86,7 @@ class OneHealthDB {
   async checkAndSeedInitialData() {
     const docs = await this.getAllDoctors();
     if (docs.length === 0) {
-      console.log('[IndexedDB] Seeding Doctors & Vets Directory with full Education, Fee & Location info...');
+      console.log('[IndexedDB] Seeding Doctors & Vets Directory with full GPS, Availability & Credentials...');
       const initialDoctors = [
         {
           id: "DOC-001",
@@ -100,7 +108,9 @@ class OneHealthDB {
           languages: "Marathi (मराठी), Hindi, English",
           facilities: "In-patient Beds, Emergency Oxygen, ECG, Random Blood Sugar, Fever Ward, Dressing",
           coordinates: { lat: 19.8824, lng: 74.4789 },
-          available: true
+          availability_state: "AVAILABLE",
+          last_status_time: "29 Aug 2026, 6:20 PM",
+          verified: true
         },
         {
           id: "DOC-002",
@@ -110,7 +120,7 @@ class OneHealthDB {
           medical_reg_no: "MMC-2015/08/3920",
           education: "MBBS (GMC Aurangabad), DCH (Diploma in Child Health)",
           experience_years: 9,
-          specialization: "Child Growth, Malnutrition (SAM/MAM) & Immunization",
+          specialization: "Pediatrics, Child Growth, Malnutrition (SAM/MAM)",
           consultation_fee: "₹100 (Subsidized for Rural Families)",
           clinic_name: "Matoshree Children Clinic & NRC Care",
           village: "Pohegaon",
@@ -122,7 +132,9 @@ class OneHealthDB {
           languages: "Marathi (मराठी), Hindi, English",
           facilities: "Baby Warmer, Phototherapy, Growth Monitoring, Nebulization, RUTF Nutrition Counseling",
           coordinates: { lat: 19.8912, lng: 74.4623 },
-          available: true
+          availability_state: "AVAILABLE",
+          last_status_time: "29 Aug 2026, 5:45 PM",
+          verified: true
         },
         {
           id: "DOC-003",
@@ -132,7 +144,7 @@ class OneHealthDB {
           medical_reg_no: "MMC-2018/11/5120",
           education: "MBBS (MUHS Nashik), Fellowship in Emergency Medicine (FEM)",
           experience_years: 6,
-          specialization: "Primary Emergency Care, Diabetes & Hypertension",
+          specialization: "Emergency Care, Cardiology & Hypertension",
           consultation_fee: "Free (National Health Mission / PHC)",
           clinic_name: "Primary Health Centre (PHC) Dhamori",
           village: "Dhamori",
@@ -144,7 +156,9 @@ class OneHealthDB {
           languages: "Marathi (मराठी), Hindi",
           facilities: "Labor Room, Free Generic Pharmacy, Rapid Dengue/Malaria Tests, IV Infusion",
           coordinates: { lat: 19.8654, lng: 74.4921 },
-          available: true
+          availability_state: "BUSY",
+          last_status_time: "29 Aug 2026, 6:10 PM",
+          verified: true
         },
         {
           id: "VET-001",
@@ -154,7 +168,7 @@ class OneHealthDB {
           medical_reg_no: "MSVC-2009/4412",
           education: "BVSc & AH (Bombay Veterinary College), MVSc (Surgery)",
           experience_years: 15,
-          specialization: "Bovine Diseases, Lumpy Skin, Mastitis & Livestock Surgery",
+          specialization: "Veterinary Surgery, Bovine Diseases, Lumpy Skin, Mastitis",
           consultation_fee: "Free Govt Service / ₹20-40 Medicine Subsidized",
           clinic_name: "Taluka Veterinary Dispensary (पशुवैद्यकीय दवाखाना)",
           village: "Kopargaon",
@@ -166,7 +180,9 @@ class OneHealthDB {
           languages: "Marathi (मराठी), Hindi, English",
           facilities: "Cattle Crush, Artificial Insemination, CMT Mastitis Rapid Test, Wound Debridement, Vaccine Bank",
           coordinates: { lat: 19.8790, lng: 74.4720 },
-          available: true
+          availability_state: "AVAILABLE",
+          last_status_time: "29 Aug 2026, 6:15 PM",
+          verified: true
         },
         {
           id: "VET-002",
@@ -176,7 +192,7 @@ class OneHealthDB {
           medical_reg_no: "MSVC-2016/7821",
           education: "BVSc & AH (MAFSU Nagpur)",
           experience_years: 8,
-          specialization: "Dairy Cattle Health, Goat/Sheep Diseases (PPR), Vaccination",
+          specialization: "Veterinary Medicine, Dairy Cattle Health, Goat/Sheep Diseases (PPR)",
           consultation_fee: "Free (Govt Dairy Scheme) / ₹50 Field Visit",
           clinic_name: "Rural Veterinary First-Aid Centre Pohegaon",
           village: "Pohegaon",
@@ -188,7 +204,9 @@ class OneHealthDB {
           languages: "Marathi (मराठी), Hindi",
           facilities: "Deworming, FMD/LSD Vaccination, Tick Repellent Spray, Udder Infusion, Post-mortem Triage",
           coordinates: { lat: 19.8945, lng: 74.4680 },
-          available: true
+          availability_state: "AVAILABLE",
+          last_status_time: "29 Aug 2026, 5:30 PM",
+          verified: true
         }
       ];
       for (const d of initialDoctors) {
@@ -198,7 +216,7 @@ class OneHealthDB {
 
     const cases = await this.getAllCases();
     if (cases.length === 0) {
-      console.log('[IndexedDB] Seeding initial case records...');
+      console.log('[IndexedDB] Seeding initial case records & epidemic alerts...');
       const initialAlerts = [
         {
           id: 1,
@@ -252,6 +270,7 @@ class OneHealthDB {
           triage_summary: "High fever (103.2°F) for 5 days with chills, severe retro-orbital headache, petechial rash on forearms. Suspected Dengue / Arboviral Fever.",
           primary_condition: "Suspected Dengue / Arboviral Fever",
           confidence_score: 0.91,
+          recommended_specialty: "General Medicine",
           data_payload: {
             vitals: { temp_f: 103.2, bp_systolic: 100, bp_diastolic: 68, pulse: 104, spo2: 96, blood_sugar_mgdl: 110 },
             symptoms: ["fever_chills", "eye_pain_retroorbital", "skin_rash_petechiae", "severe_bodyache"]
@@ -277,6 +296,7 @@ class OneHealthDB {
           triage_summary: "Severe Acute Malnutrition (SAM) with Gross Motor Delay. MUAC 11.2 cm (< 11.5 cm = SAM). WAZ: -3.4 SD.",
           primary_condition: "Severe Acute Malnutrition (SAM)",
           confidence_score: 0.95,
+          recommended_specialty: "Pediatrics",
           data_payload: {
             age_months: 14, weight_kg: 6.1, height_cm: 71, muac_cm: 11.2, edema: "no",
             who_scores: { waz: -3.4, haz: -2.6, whz: -3.2, muac_cm: 11.2 }
@@ -302,6 +322,7 @@ class OneHealthDB {
           triage_summary: "Circumscribed cutaneous nodules with fever (105.4°F) and milk yield crash characteristic of Lumpy Skin Disease (LSD).",
           primary_condition: "Lumpy Skin Disease (LSD) - Capripoxvirus",
           confidence_score: 0.94,
+          recommended_specialty: "Veterinary Medicine",
           data_payload: {
             species: "Cattle", rectal_temp_f: 105.4, herd_size: 12,
             symptoms: ["skin_nodules_lumps", "milk_drop_severe", "swollen_lymph_nodes"]
@@ -350,13 +371,44 @@ class OneHealthDB {
 
   async getNearbyDoctors(userVillage, roleFilter = null) {
     const all = await this.getAllDoctors(roleFilter);
-    if (!userVillage) return all;
+    if (!window.oneHealthLocation) return all;
 
-    const target = userVillage.toLowerCase().trim();
-    return all.sort((a, b) => {
-      const aMatch = a.village && a.village.toLowerCase().includes(target) ? 1 : 0;
-      const bMatch = b.village && b.village.toLowerCase().includes(target) ? 1 : 0;
-      return bMatch - aMatch;
+    return window.oneHealthLocation.rankDoctors(all, {
+      targetVillage: userVillage,
+      targetRole: roleFilter
+    });
+  }
+
+  // --- CONSULTATION REQUESTS ---
+
+  async createConsultationRequest(reqData) {
+    await this.init();
+    reqData.id = reqData.id || `REQ-${Date.now().toString(36).toUpperCase()}`;
+    reqData.created_at = reqData.created_at || new Date().toISOString();
+    reqData.status = reqData.status || 'pending';
+
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(['consultation_requests', 'sync_queue'], 'readwrite');
+      tx.objectStore('consultation_requests').put(reqData);
+      tx.objectStore('sync_queue').add({
+        action: 'CONSULTATION_REQUEST',
+        entity_id: reqData.id,
+        payload: reqData,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      });
+      tx.oncomplete = () => resolve(reqData);
+      tx.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async getConsultationRequests() {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('consultation_requests', 'readonly');
+      const req = tx.objectStore('consultation_requests').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = (e) => reject(e.target.error);
     });
   }
 
@@ -461,13 +513,15 @@ class OneHealthDB {
     const cases = await this.getAllCases();
     const alerts = await this.getAlerts();
     const docs = await this.getAllDoctors();
+    const consults = await this.getConsultationRequests();
     return {
       exported_at: new Date().toISOString(),
       app: "ONEHEALTH_AI_STANDALONE",
       total_cases: cases.length,
       cases: cases,
       alerts: alerts,
-      doctors: docs
+      doctors: docs,
+      consultations: consults
     };
   }
 

@@ -2,7 +2,7 @@
  * ONEHEALTH AI - Main Application Controller (Role-Aware Architecture)
  * Supports Patient / Citizen, Medical Doctor (MBBS), and Veterinary Doctor (BVSc).
  * Features autonomous offline AI, local IndexedDB persistence, Doctor Location matching,
- * and comprehensive real-time multilingual translation across all pages.
+ * real WebRTC video consultations, on-device conversational AI assistant, and GPS proximity ranking.
  */
 
 class OneHealthApp {
@@ -13,6 +13,7 @@ class OneHealthApp {
     this.capturedImages = [];
     this.activeCase = null;
     this.allCases = [];
+    this.lastScreeningResult = null;
   }
 
   async init() {
@@ -258,6 +259,7 @@ class OneHealthApp {
           statusDot.className = 'status-dot offline';
           statusText.innerText = window.oneHealthI18n.t('status_offline');
         }
+        if (this.currentView === 'doctors') this.loadDoctorsDirectory();
       } else if (event.type === 'sync_success') {
         this.showToast(`Synced ${event.casesSynced} cases successfully.`);
         await this.updatePendingSyncCount();
@@ -288,7 +290,27 @@ class OneHealthApp {
   }
 
   // =========================================================================
-  // NEARBY DOCTORS & VETS DIRECTORY (Comprehensive Info & Education)
+  // GPS LOCATION TOGGLE & PROXIMITY
+  // =========================================================================
+  async toggleGPSLocation() {
+    const btn = document.getElementById('btnToggleGPS');
+    const textEl = document.getElementById('gpsBtnText');
+    if (textEl) textEl.innerText = 'Acquiring GPS...';
+
+    const res = await window.oneHealthLocation.requestGPSLocation();
+    if (res.success) {
+      if (btn) btn.classList.add('btn-primary');
+      if (textEl) textEl.innerText = window.oneHealthI18n.t('btn_gps_active');
+      this.showToast(`GPS Location Acquired (Accuracy: ${Math.round(res.coords.accuracy)}m)`);
+    } else {
+      if (textEl) textEl.innerText = window.oneHealthI18n.t('btn_use_gps');
+      this.showToast(res.error || 'GPS unavailable. Showing village based distances.');
+    }
+    await this.loadDoctorsDirectory();
+  }
+
+  // =========================================================================
+  // NEARBY DOCTORS & VETS DIRECTORY (GPS & Explainable Recommendations)
   // =========================================================================
   async loadDoctorsDirectory() {
     const container = document.getElementById('doctorsListContainer');
@@ -300,18 +322,38 @@ class OneHealthApp {
     const villageFilter = document.getElementById('doctorVillageFilter') ? document.getElementById('doctorVillageFilter').value : '';
     const roleFilter = document.getElementById('doctorRoleFilter') ? document.getElementById('doctorRoleFilter').value : '';
     
-    let docs = await window.oneHealthDB.getNearbyDoctors(villageFilter, roleFilter || null);
+    const allDocs = await window.oneHealthDB.getAllDoctors(roleFilter || null);
+    const ranked = window.oneHealthLocation.rankDoctors(allDocs, {
+      targetVillage: villageFilter,
+      targetRole: roleFilter || null,
+      recommendedSpecialty: this.lastScreeningResult ? this.lastScreeningResult.recommended_specialty : null
+    });
 
-    if (docs.length === 0) {
+    if (ranked.length === 0) {
       container.innerHTML = `<p class="text-muted" style="text-align:center; padding:30px;">${lang === 'mr' ? 'कोणतेही दवाखाने आढळले नाहीत.' : lang === 'hi' ? 'कोई क्लिनिक नहीं मिला।' : 'No registered healthcare or veterinary facilities found matching your criteria.'}</p>`;
       return;
     }
 
-    container.innerHTML = docs.map(doc => {
+    container.innerHTML = ranked.map(doc => {
       const isVet = doc.role === 'vet';
       const icon = isVet ? '🐄' : '🩺';
       const badgeClass = isVet ? 'badge-green' : 'badge-yellow';
       const isFree = (doc.consultation_fee || '').toLowerCase().includes('free') || (doc.consultation_fee || '').includes('मोफत') || (doc.consultation_fee || '').includes('निःशुल्क');
+
+      // Availability state badge
+      const availState = doc.effectiveAvailability || 'AVAILABLE';
+      let availClass = 'avail-available';
+      let availText = '🟢 Available';
+      if (availState === 'BUSY') {
+        availClass = 'avail-busy';
+        availText = '🟡 Busy (In OPD)';
+      } else if (availState === 'OFFLINE') {
+        availClass = 'avail-offline';
+        availText = '⚪ Off-Duty';
+      } else if (availState === 'UNKNOWN') {
+        availClass = 'avail-unknown';
+        availText = '🔘 Unknown';
+      }
 
       const labelHospital = lang === 'mr' ? '🏥 दवाखाना / रुग्णालय:' : lang === 'hi' ? '🏥 अस्पताल / क्लिनिक:' : '🏥 Hospital / Clinic:';
       const labelAddress = lang === 'mr' ? '📍 पत्ता:' : lang === 'hi' ? '📍 पता:' : '📍 Address:';
@@ -324,14 +366,28 @@ class OneHealthApp {
         <div class="doctor-card">
           <div class="doc-header">
             <div>
-              <div style="display:flex; align-items:center; gap:6px;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                 <span style="font-size:20px;">${icon}</span>
                 <strong class="doc-name">${doc.name}</strong>
+                ${doc.calculatedDistanceKm !== null ? `<span class="distance-badge">📍 ${doc.calculatedDistanceKm} km away</span>` : ''}
               </div>
               <div class="doc-title-sub">${doc.title || (isVet ? 'Veterinary Surgeon' : 'Medical Officer')}</div>
             </div>
-            <span class="badge ${badgeClass}">${isVet ? (lang === 'mr' ? 'पशुवैद्यकीय काळजी' : lang === 'hi' ? 'पशु चिकित्सा' : 'Veterinary Care') : (lang === 'mr' ? 'मानवी आरोग्य' : lang === 'hi' ? 'मानव चिकित्सा' : 'Human Care')}</span>
+            <div style="text-align:right;">
+              <span class="avail-badge ${availClass}">${availText}</span>
+              ${doc.cacheNote ? `<div style="font-size:10px; color:#64748b; margin-top:2px;">${doc.cacheNote}</div>` : ''}
+            </div>
           </div>
+
+          <!-- Explainable Recommendation Reason Box -->
+          ${(doc.recommendationReasons && doc.recommendationReasons.length > 0) ? `
+            <div class="recommendation-box">
+              <strong>💡 Recommended because:</strong>
+              <ul>
+                ${doc.recommendationReasons.slice(0, 3).map(r => `<li>${r}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
 
           <!-- Tags: Education, Reg, Experience, Fee -->
           <div class="doc-tags-row">
@@ -378,6 +434,9 @@ class OneHealthApp {
                 💬 ${t('btn_whatsapp_doc')}
               </a>
             ` : ''}
+            <button class="btn-video-call" onclick='window.oneHealthApp.launchVideoConsult(${JSON.stringify(doc).replace(/'/g, "&apos;")})'>
+              📹 ${t('btn_video_consult')}
+            </button>
             <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.referDirectlyToDoctor('${doc.name}', '${doc.role}')">
               📋 ${t('btn_consult_doc')}
             </button>
@@ -387,12 +446,124 @@ class OneHealthApp {
     }).join('');
   }
 
+  launchVideoConsult(doctorObj) {
+    window.oneHealthWebRTC.startConsultation(doctorObj, this.activeCase);
+  }
+
   referDirectlyToDoctor(doctorName, role) {
     const lang = window.oneHealthI18n.currentLang;
     const msg = lang === 'mr' ? `${doctorName} यांच्याकडे सल्ला मागितला आहे. तपासणी सुरू करत आहोत...` : lang === 'hi' ? `${doctorName} से परामर्श के लिए जांच शुरू कर रहे हैं...` : `Consultation request flagged for ${doctorName}. Starting screening...`;
     this.showToast(msg);
     this.selectedScreeningType = role === 'vet' ? 'livestock' : 'human_general';
     this.navigateTo('screen');
+  }
+
+  // =========================================================================
+  // OFFLINE AI ASSISTANT CHAT HANDLERS
+  // =========================================================================
+  openAIAssistant() {
+    const drawer = document.getElementById('aiAssistantDrawer');
+    if (!drawer) return;
+    drawer.style.display = 'flex';
+
+    if (window.oneHealthAIAssistant.chatHistory.length === 0) {
+      const lang = window.oneHealthI18n.currentLang;
+      const greeting = window.oneHealthAIAssistant.formatGreetingResponse(lang);
+      this.appendAssistantBubble({ text: greeting, timestamp: 'Now' });
+    }
+  }
+
+  closeAIAssistant() {
+    const drawer = document.getElementById('aiAssistantDrawer');
+    if (drawer) drawer.style.display = 'none';
+  }
+
+  async sendAIMessage() {
+    const input = document.getElementById('aiChatInput');
+    if (!input || !input.value.trim()) return;
+
+    const userText = input.value.trim();
+    input.value = '';
+
+    // Append user message to UI
+    this.appendUserBubble(userText);
+
+    // Process on-device offline
+    const response = await window.oneHealthAIAssistant.processUserMessage(userText);
+    if (response) {
+      this.appendAssistantBubble(response);
+    }
+  }
+
+  startAIVoiceInput() {
+    window.oneHealthVoice.startListening((transcript) => {
+      const input = document.getElementById('aiChatInput');
+      if (input) {
+        input.value = transcript;
+        this.sendAIMessage();
+      }
+    });
+  }
+
+  appendUserBubble(text) {
+    const container = document.getElementById('aiChatMessages');
+    if (!container) return;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble user';
+    bubble.innerText = text;
+    container.appendChild(bubble);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  appendAssistantBubble(data) {
+    const container = document.getElementById('aiChatMessages');
+    if (!container) return;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble assistant';
+
+    let html = `<div style="white-space:pre-line;">${data.text}</div>`;
+
+    if (data.matchingDoctors && data.matchingDoctors.length > 0) {
+      html += `<div style="margin-top:10px; border-top:1px solid #e2e8f0; padding-top:8px;">
+        <strong style="font-size:12px; color:#0f766e;">Matched Doctors in Directory:</strong>`;
+      for (const d of data.matchingDoctors) {
+        html += `
+          <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 8px; margin-top:6px; font-size:12px;">
+            <strong>${d.name}</strong> (${d.education})<br>
+            📍 ${d.village} • 💰 ${d.consultation_fee}<br>
+            <a href="tel:${d.phone}" style="color:#0284c7; font-weight:700; text-decoration:none;">📞 Call ${d.phone}</a>
+          </div>
+        `;
+      }
+      html += `</div>`;
+    }
+
+    if (data.suggestedAction) {
+      if (data.suggestedAction.type === 'start_screening') {
+        html += `
+          <button class="btn btn-primary btn-sm" style="margin-top:10px; width:100%;" onclick="window.oneHealthApp.switchScreeningType('${data.suggestedAction.category}'); window.oneHealthApp.closeAIAssistant(); window.oneHealthApp.navigateTo('screen');">
+            ⚡ Open ${data.suggestedAction.category.replace('_', ' ').toUpperCase()} Screening Form ➔
+          </button>
+        `;
+      } else if (data.suggestedAction.type === 'view_directory') {
+        html += `
+          <button class="btn btn-secondary btn-sm" style="margin-top:10px; width:100%;" onclick="window.oneHealthApp.closeAIAssistant(); window.oneHealthApp.navigateTo('doctors');">
+            📍 Open Local Doctor Directory ➔
+          </button>
+        `;
+      }
+    }
+
+    bubble.innerHTML = html;
+    container.appendChild(bubble);
+    container.scrollTop = container.scrollHeight;
+
+    // Optional voice playback of key advice
+    if (data.symptomsDetected && data.symptomsDetected.length > 0) {
+      window.oneHealthVoice.speak("Symptoms recorded. Please complete the on-device screening form.");
+    }
   }
 
   // =========================================================================
@@ -447,7 +618,10 @@ class OneHealthApp {
       opd_timings: document.getElementById('prof_timings').value.trim(),
       languages: document.getElementById('prof_languages').value.trim(),
       facilities: document.getElementById('prof_facilities').value.trim(),
-      available: true
+      coordinates: window.oneHealthLocation.getVillageCoordinates(document.getElementById('prof_village').value.trim()),
+      availability_state: "AVAILABLE",
+      last_status_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      verified: true
     };
 
     await window.oneHealthDB.saveSetting('doctor_profile_data', profile);
@@ -459,7 +633,7 @@ class OneHealthApp {
   }
 
   // =========================================================================
-  // SCREENING FORM BUILDER & SUBMISSION (Multilingual)
+  // SCREENING FORM BUILDER & SUBMISSION
   // =========================================================================
   renderScreeningForm() {
     const container = document.getElementById('screeningFormContainer');
@@ -870,6 +1044,8 @@ class OneHealthApp {
       aiResult = window.oneHealthAI.evaluateLivestock(payload);
     }
 
+    this.lastScreeningResult = aiResult;
+
     const caseRecord = {
       id: caseId,
       case_type: this.selectedScreeningType,
@@ -885,6 +1061,7 @@ class OneHealthApp {
       triage_summary: aiResult.triage_summary,
       primary_condition: aiResult.primary_condition,
       confidence_score: aiResult.confidence_score,
+      recommended_specialty: aiResult.recommended_specialty,
       data_payload: payload,
       images: this.capturedImages,
       status: (aiResult.risk_level === 'RED' || aiResult.risk_level === 'ORANGE') ? 'escalated' : 'screened',
@@ -893,6 +1070,8 @@ class OneHealthApp {
       is_synced: false,
       reviews: []
     };
+
+    this.activeCase = caseRecord;
 
     await window.oneHealthDB.saveCase(caseRecord, true);
     await this.updatePendingSyncCount();
@@ -917,8 +1096,14 @@ class OneHealthApp {
     const lang = window.oneHealthI18n.currentLang;
     const t = (k) => window.oneHealthI18n.t(k);
 
-    const nearbyDocs = await window.oneHealthDB.getNearbyDoctors(village, caseRecord.assigned_role);
-    const topDoc = nearbyDocs.length > 0 ? nearbyDocs[0] : null;
+    const allDocs = await window.oneHealthDB.getAllDoctors(caseRecord.assigned_role);
+    const rankedDocs = window.oneHealthLocation.rankDoctors(allDocs, {
+      targetVillage: village,
+      targetRole: caseRecord.assigned_role,
+      recommendedSpecialty: aiResult.recommended_specialty
+    });
+
+    const topDoc = rankedDocs.length > 0 ? rankedDocs[0] : null;
 
     resultBox.innerHTML = `
       <div class="result-box risk-${aiResult.risk_level}">
@@ -930,6 +1115,9 @@ class OneHealthApp {
         </div>
 
         <h3 class="result-title">${aiResult.primary_condition}</h3>
+        <div style="font-size:13px; color:#0f766e; font-weight:700; margin-bottom:8px;">
+          🔬 Recommended Medical Specialty: <u>${aiResult.recommended_specialty || 'General Care'}</u>
+        </div>
         <p class="result-summary"><strong>${lang === 'mr' ? 'तपासणी सारांश:' : lang === 'hi' ? 'जांच सारांश:' : 'Summary:'}</strong> ${aiResult.triage_summary}</p>
 
         <h4 style="font-size:14px; font-weight:700; margin-bottom:6px;">📋 ${lang === 'mr' ? 'उपचार व वैद्यकीय सूचना:' : lang === 'hi' ? 'देखभाल एवं चिकित्सकीय परामर्श:' : 'Care & Clinical Recommendations:'}</h4>
@@ -938,15 +1126,34 @@ class OneHealthApp {
         </ul>
 
         ${topDoc ? `
-          <div style="background:rgba(255,255,255,0.9); padding:14px; border-radius:8px; margin:14px 0; border:1px solid #cbd5e1;">
-            <div style="font-size:12px; font-weight:800; color:var(--secondary); text-transform:uppercase;">📍 ${lang === 'mr' ? `${village} मधील जवळचे डॉक्टर:` : lang === 'hi' ? `${village} में नजदीकी डॉक्टर:` : `Nearest Doctor in ${village}:`}</div>
-            <strong style="font-size:16px; display:block; color:var(--text-main); margin-top:2px;">${topDoc.name} (${topDoc.education})</strong>
+          <div style="background:rgba(255,255,255,0.95); padding:16px; border-radius:10px; margin:16px 0; border:1px solid #cbd5e1; box-shadow:var(--shadow-sm);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <div style="font-size:12px; font-weight:800; color:var(--secondary); text-transform:uppercase;">
+                📍 Best Matching Doctor for ${aiResult.recommended_specialty}:
+              </div>
+              ${topDoc.calculatedDistanceKm !== null ? `<span class="distance-badge">📍 ${topDoc.calculatedDistanceKm} km away</span>` : ''}
+            </div>
+
+            <strong style="font-size:16.5px; display:block; color:var(--text-main);">${topDoc.name} (${topDoc.education})</strong>
             <div style="font-size:12.5px; color:#475569;">🏥 ${topDoc.clinic_name} | 💰 ${lang === 'mr' ? 'फी' : lang === 'hi' ? 'फीस' : 'Fee'}: <strong>${topDoc.consultation_fee}</strong></div>
             <div style="font-size:12px; color:#64748b;">📍 ${topDoc.address} | 🕒 ${topDoc.opd_timings}</div>
-            <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+
+            ${(topDoc.recommendationReasons && topDoc.recommendationReasons.length > 0) ? `
+              <div class="recommendation-box" style="margin-top:8px;">
+                <strong>💡 Why this doctor is recommended:</strong>
+                <ul>
+                  ${topDoc.recommendationReasons.slice(0, 2).map(r => `<li>${r}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
               <a href="tel:${topDoc.phone.replace(/[^0-9+]/g, '')}" class="btn-call" style="font-size:12px; padding:6px 12px;">
                 📞 ${t('btn_call_doc')} ${topDoc.phone}
               </a>
+              <button class="btn-video-call" style="font-size:12px; padding:6px 12px;" onclick='window.oneHealthApp.launchVideoConsult(${JSON.stringify(topDoc).replace(/'/g, "&apos;")})'>
+                📹 ${t('btn_video_consult')}
+              </button>
               <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.navigateTo('doctors')">
                 ${t('btn_find_nearby_docs')}
               </button>

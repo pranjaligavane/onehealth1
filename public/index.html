@@ -154,12 +154,15 @@
       <div id="screeningFormContainer"></div>
     </section>
 
-    <!-- 3. NEARBY DOCTORS & VETS DIRECTORY VIEW (Rich Info) -->
+    <!-- 3. NEARBY DOCTORS & VETS DIRECTORY VIEW (GPS & Explainable Ranking) -->
     <section id="view-doctors" class="view-section">
       <div class="card-box">
         <div class="form-title-bar">
           <h3 class="form-title" data-i18n="dir_title">📍 Doctors & Vets in Your Area</h3>
-          <div style="display:flex; gap:6px;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button id="btnToggleGPS" class="btn btn-outline btn-sm" onclick="window.oneHealthApp.toggleGPSLocation()">
+              <span id="gpsBtnText" data-i18n="btn_use_gps">📍 Use My GPS Location</span>
+            </button>
             <select class="form-control" id="doctorVillageFilter" style="width:auto; padding:4px 8px;" onchange="window.oneHealthApp.loadDoctorsDirectory()">
               <option value="" data-i18n="all_villages">All Villages (Kopargaon Taluka)</option>
               <option value="Kopargaon">Kopargaon Town</option>
@@ -167,6 +170,7 @@
               <option value="Dhamori">Dhamori</option>
               <option value="Savlivihor">Savlivihor</option>
               <option value="Rahata">Rahata</option>
+              <option value="Shirdi">Shirdi</option>
             </select>
             <select class="form-control" id="doctorRoleFilter" style="width:auto; padding:4px 8px;" onchange="window.oneHealthApp.loadDoctorsDirectory()">
               <option value="" data-i18n="all_specialists">All Specialists</option>
@@ -371,6 +375,47 @@
 
   </main>
 
+  <!-- FLOATING ACTION BUTTON: OFFLINE AI ASSISTANT -->
+  <button id="btnOpenAIAssistant" class="ai-assistant-fab" onclick="window.oneHealthApp.openAIAssistant()">
+    <span>💬</span>
+    <span data-i18n="ai_assistant_btn">Offline AI Assistant</span>
+  </button>
+
+  <!-- OFFLINE AI ASSISTANT CHAT DRAWER -->
+  <div id="aiAssistantDrawer" class="ai-chat-drawer">
+    <div class="ai-chat-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:22px;">🤖</span>
+        <div>
+          <h4 style="font-size:15px; font-weight:800; margin:0;" data-i18n="ai_assistant_title">OneHealth AI Assistant</h4>
+          <span style="font-size:11px; color:#94a3b8;" data-i18n="ai_assistant_sub">100% On-Device Offline Guide</span>
+        </div>
+      </div>
+      <button onclick="window.oneHealthApp.closeAIAssistant()" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+
+    <div id="aiChatMessages" class="ai-chat-messages">
+      <!-- Conversation history dynamically appended -->
+    </div>
+
+    <div class="ai-chat-input-bar">
+      <button type="button" class="btn btn-outline btn-sm" onclick="window.oneHealthApp.startAIVoiceInput()" title="Voice Dictation">
+        🎙️
+      </button>
+      <input type="text" id="aiChatInput" class="form-control" data-i18n-placeholder="ai_input_placeholder" placeholder="Describe symptoms (e.g. fever for 3 days)..." onkeydown="if(event.key==='Enter') window.oneHealthApp.sendAIMessage()">
+      <button type="button" class="btn btn-primary btn-sm" onclick="window.oneHealthApp.sendAIMessage()">
+        <span data-i18n="btn_send">Send</span> ➔
+      </button>
+    </div>
+  </div>
+
+  <!-- REAL WEBRTC VIDEO CONSULTATION MODAL -->
+  <div id="videoConsultModal" class="modal-overlay" style="display:none;">
+    <div id="videoModalContent" style="width:100%; display:flex; justify-content:center;">
+      <!-- Populated dynamically by window.oneHealthWebRTC -->
+    </div>
+  </div>
+
   <!-- ROLE SELECTION MODAL -->
   <div id="roleSelectionModal" class="role-modal-overlay" style="display:none;">
     <div class="role-modal-content">
@@ -434,7 +479,10 @@
   <script src="./js/i18n.js"></script>
   <script src="./js/voice.js"></script>
   <script src="./js/camera.js"></script>
+  <script src="./js/location-engine.js"></script>
   <script src="./js/ai-engine.js"></script>
+  <script src="./js/ai-assistant.js"></script>
+  <script src="./js/webrtc-consult.js"></script>
   <script src="./js/sync.js"></script>
   <script src="./js/analytics.js"></script>
   <script src="./js/app.js"></script>
