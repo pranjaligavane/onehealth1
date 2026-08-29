@@ -225,7 +225,9 @@ class OneHealthApp {
 
     window.oneHealthI18n.applyTranslations();
 
-    if (viewId === 'cases') {
+    if (viewId === 'home') {
+      this._loadPatientAppointments();
+    } else if (viewId === 'cases') {
       this.loadCasesList();
     } else if (viewId === 'portal') {
       this.loadPortalQueue();
@@ -479,20 +481,20 @@ class OneHealthApp {
 
           <!-- Action Buttons -->
           <div class="doc-actions">
-            <a href="tel:${doc.phone.replace(/[^0-9+]/g, '')}" class="btn-call">
-              📞 ${t('btn_call_doc')} ${doc.phone}
-            </a>
-            ${doc.whatsapp ? `
-              <a href="https://wa.me/${doc.whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(doc.name)},%20I%20would%20like%20to%20consult%20regarding%20a%20health%20screening." target="_blank" class="btn-whatsapp">
-                💬 ${t('btn_whatsapp_doc')}
-              </a>
-            ` : ''}
+            <button class="btn btn-primary btn-sm" style="font-weight:800;" onclick='window.oneHealthApp.openAppointmentModal(${JSON.stringify(doc).replace(/'/g, "&apos;")})'>
+              📅 Book Appointment
+            </button>
             <button class="btn-video-call" onclick='window.oneHealthApp.launchVideoConsult(${JSON.stringify(doc).replace(/'/g, "&apos;")})'>
               📹 ${t('btn_video_consult')}
             </button>
-            <button class="btn btn-outline btn-sm" onclick="window.oneHealthApp.referDirectlyToDoctor('${doc.name}', '${doc.role}')">
-              📋 ${t('btn_consult_doc')}
-            </button>
+            <a href="tel:${doc.phone ? doc.phone.replace(/[^0-9+]/g, '') : ''}" class="btn-call">
+              📞 Call
+            </a>
+            ${doc.whatsapp ? `
+              <a href="https://wa.me/${doc.whatsapp.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(doc.name)},%20I%20would%20like%20to%20consult%20regarding%20a%20health%20screening." target="_blank" class="btn-whatsapp">
+                💬 WhatsApp
+              </a>
+            ` : ''}
           </div>
         </div>
       `;
@@ -1579,6 +1581,7 @@ class OneHealthApp {
   async loadPortalQueue() {
     await this._loadDashboardWelcome();
     await this._loadDashboardStats();
+    await this._loadDoctorAppointments();
     await this._loadDashboardQueue();
     await this._loadDashboardTimeline();
   }
@@ -1783,6 +1786,239 @@ class OneHealthApp {
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
+  }
+
+  // =========================================================================
+  // APPOINTMENT BOOKING & TWO-WAY CONSULTATION MANAGEMENT
+  // =========================================================================
+
+  openAppointmentModal(doctorObj) {
+    if (!doctorObj) return;
+    document.getElementById('apptDoctorId').value = doctorObj.id || doctorObj.user_id || '';
+    document.getElementById('apptDoctorPhone').value = doctorObj.phone || '';
+    document.getElementById('apptDoctorName').innerText = `Book ${doctorObj.name}`;
+    document.getElementById('apptDoctorClinic').innerText = `${doctorObj.clinic_name || doctorObj.specialization || 'Clinical Station'} · ${doctorObj.village || 'Kopargaon'}`;
+
+    // Pre-fill patient details if authenticated
+    const currentUser = window.oneHealthSupabase?.currentUser;
+    if (currentUser) {
+      document.getElementById('apptPatientName').value = currentUser.name || '';
+      document.getElementById('apptPatientPhone').value = currentUser.phone || '';
+      document.getElementById('apptPatientVillage').value = currentUser.village || 'Kopargaon';
+    }
+
+    // Default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('apptDate').value = tomorrow.toISOString().split('T')[0];
+
+    document.getElementById('appointmentModal').style.display = 'flex';
+  }
+
+  closeAppointmentModal() {
+    const modal = document.getElementById('appointmentModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async submitAppointmentBooking(event) {
+    event.preventDefault();
+
+    const doctorId = document.getElementById('apptDoctorId').value;
+    const doctorName = document.getElementById('apptDoctorName').innerText.replace('Book ', '');
+    const doctorClinic = document.getElementById('apptDoctorClinic').innerText;
+    const patientName = document.getElementById('apptPatientName').value.trim();
+    const patientPhone = document.getElementById('apptPatientPhone').value.trim();
+    const patientVillage = document.getElementById('apptPatientVillage').value.trim();
+    const date = document.getElementById('apptDate').value;
+    const slot = document.getElementById('apptSlot').value;
+    const consultType = document.getElementById('apptConsultType').value;
+    const reason = document.getElementById('apptReason').value.trim();
+
+    const reqId = 'APPT-' + Date.now().toString(36).toUpperCase();
+    const appointmentData = {
+      id: reqId,
+      doctor_id: doctorId,
+      doctor_name: doctorName,
+      doctor_clinic: doctorClinic,
+      patient_id: window.oneHealthSupabase?.currentUser?.id || ('pat-' + Date.now()),
+      patient_name: patientName,
+      patient_phone: patientPhone,
+      patient_village: patientVillage,
+      date: date,
+      time_slot: slot,
+      consultation_type: consultType,
+      reason: reason,
+      status: 'PENDING',
+      created_at: new Date().toISOString(),
+    };
+
+    // 1. Save to local IndexedDB
+    await window.oneHealthDB.createConsultationRequest(appointmentData);
+
+    // 2. Save to local cross-tab / offline storage
+    try {
+      const stored = JSON.parse(localStorage.getItem('onehealth_consultation_requests') || '[]');
+      stored.unshift(appointmentData);
+      localStorage.setItem('onehealth_consultation_requests', JSON.stringify(stored));
+    } catch (e) {}
+
+    this.closeAppointmentModal();
+    this.showToast(`✅ Appointment booked with ${doctorName} for ${date} (${slot})!`);
+    this._loadPatientAppointments();
+  }
+
+  async _loadDoctorAppointments() {
+    const container = document.getElementById('doctorAppointmentsContainer');
+    const badge = document.getElementById('apptCountBadge');
+    if (!container) return;
+
+    // Load from IndexedDB and local accounts cache
+    const idbReqs = (await window.oneHealthDB.getConsultationRequests()) || [];
+    let localReqs = [];
+    try {
+      localReqs = JSON.parse(localStorage.getItem('onehealth_consultation_requests') || '[]');
+    } catch (e) {}
+
+    // Merge uniquely by id
+    const all = [...idbReqs];
+    for (const r of localReqs) {
+      if (!all.some(a => a.id === r.id)) all.push(r);
+    }
+
+    const currentDoc = window.oneHealthSupabase?.currentUser;
+    const docName = currentDoc?.name?.toLowerCase() || '';
+
+    // Filter relevant for this doctor (or all if demo testing)
+    const forMe = all.filter(r => {
+      if (!docName || docName.includes('doctor') || docName.includes('anand')) return true;
+      return (r.doctor_name && r.doctor_name.toLowerCase().includes(docName)) ||
+             (r.doctor_id && r.doctor_id === currentDoc?.id);
+    });
+
+    if (badge) {
+      const pendingCount = forMe.filter(r => r.status === 'PENDING').length;
+      badge.innerText = `${pendingCount} New`;
+      badge.style.background = pendingCount > 0 ? '#ef4444' : '#0f766e';
+    }
+
+    if (forMe.length === 0) {
+      container.innerHTML = `
+        <div class="dash-empty-state" style="padding:18px 0;">
+          <div style="font-size:24px; margin-bottom:4px;">📬</div>
+          <div style="font-size:13px; color:var(--text-muted);">No appointment requests yet.</div>
+        </div>`;
+      return;
+    }
+
+    const statusBadge = {
+      PENDING: '<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">⏳ PENDING</span>',
+      ACCEPTED: '<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">🟢 ACCEPTED</span>',
+      COMPLETED: '<span style="background:#e0f2fe; color:#075985; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">✅ COMPLETED</span>',
+    };
+
+    container.innerHTML = forMe.map(a => `
+      <div class="dash-queue-card" style="background:#fff; border:1px solid var(--border-color); border-left:4px solid ${a.status === 'ACCEPTED' ? '#22c55e' : a.status === 'COMPLETED' ? '#0284c7' : '#f59e0b'};">
+        <div class="dash-queue-card-top">
+          <div>
+            <strong style="color:var(--text-main); font-size:13px;">👤 ${a.patient_name}</strong>
+            <span style="font-size:11px; color:var(--text-muted);"> (${a.patient_village || 'Kopargaon'})</span>
+          </div>
+          <div>${statusBadge[a.status] || a.status}</div>
+        </div>
+        <div style="font-size:12px; color:#475569; margin:4px 0;">
+          📅 <strong>${a.date}</strong> · ${a.time_slot} · <em>${a.consultation_type || 'In-Clinic'}</em>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); background:#f8fafc; padding:4px 8px; border-radius:6px; margin-bottom:6px;">
+          📝 "${a.reason}"
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+          <a href="tel:${a.patient_phone || ''}" style="font-size:11px; color:var(--primary); font-weight:700; text-decoration:none;">
+            📞 ${a.patient_phone || 'Call'}
+          </a>
+          <div style="display:flex; gap:4px;">
+            ${a.status === 'PENDING' ? `
+              <button class="btn btn-primary btn-sm" style="padding:3px 8px; font-size:11px;" onclick="window.oneHealthApp.updateAppointmentStatus('${a.id}', 'ACCEPTED')">
+                Accept
+              </button>
+            ` : ''}
+            ${a.consultation_type === 'Video Tele-Consult' ? `
+              <button class="btn-video-call" style="padding:3px 8px; font-size:11px;" onclick='window.oneHealthApp.launchVideoConsult({name:"${a.patient_name}", phone:"${a.patient_phone}"})'>
+                📹 Call
+              </button>
+            ` : ''}
+            ${a.status !== 'COMPLETED' ? `
+              <button class="btn btn-outline btn-sm" style="padding:3px 8px; font-size:11px;" onclick="window.oneHealthApp.updateAppointmentStatus('${a.id}', 'COMPLETED')">
+                Mark Done
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async _loadPatientAppointments() {
+    const container = document.getElementById('patientAppointmentsContainer');
+    if (!container) return;
+
+    const idbReqs = (await window.oneHealthDB.getConsultationRequests()) || [];
+    let localReqs = [];
+    try {
+      localReqs = JSON.parse(localStorage.getItem('onehealth_consultation_requests') || '[]');
+    } catch (e) {}
+
+    const all = [...idbReqs];
+    for (const r of localReqs) {
+      if (!all.some(a => a.id === r.id)) all.push(r);
+    }
+
+    if (all.length === 0) {
+      container.innerHTML = `
+        <div class="dash-empty-state" style="padding:16px;">
+          <div style="font-size:24px; margin-bottom:4px;">🗓️</div>
+          <div style="font-size:13px; color:var(--text-muted);">No upcoming appointments yet. Find a doctor in the directory!</div>
+        </div>`;
+      return;
+    }
+
+    const statusBadge = {
+      PENDING: '<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">⏳ REQUEST PENDING</span>',
+      ACCEPTED: '<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">🟢 CONFIRMED</span>',
+      COMPLETED: '<span style="background:#e0f2fe; color:#075985; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">✅ COMPLETED</span>',
+    };
+
+    container.innerHTML = all.map(a => `
+      <div class="dash-queue-card" style="background:#fff; border:1px solid var(--border-color); border-left:4px solid ${a.status === 'ACCEPTED' ? '#22c55e' : '#f59e0b'};">
+        <div class="dash-queue-card-top">
+          <div>
+            <strong style="color:var(--text-main); font-size:13px;">🩺 ${a.doctor_name}</strong>
+            <span style="font-size:11px; color:var(--text-muted);"> (${a.doctor_clinic || 'Clinic'})</span>
+          </div>
+          <div>${statusBadge[a.status] || a.status}</div>
+        </div>
+        <div style="font-size:12px; color:#475569; margin:3px 0;">
+          📅 <strong>${a.date}</strong> · ${a.time_slot} · <em>${a.consultation_type || 'In-Clinic'}</em>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted);">
+          Patient: <strong>${a.patient_name}</strong> · Reason: "${a.reason}"
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async updateAppointmentStatus(id, newStatus) {
+    await window.oneHealthDB.updateConsultationStatus(id, newStatus);
+    try {
+      const stored = JSON.parse(localStorage.getItem('onehealth_consultation_requests') || '[]');
+      const item = stored.find(s => s.id === id);
+      if (item) {
+        item.status = newStatus;
+        localStorage.setItem('onehealth_consultation_requests', JSON.stringify(stored));
+      }
+    } catch (e) {}
+
+    this.showToast(`Appointment status updated to ${newStatus}`);
+    this._loadDoctorAppointments();
   }
 
   // =========================================================================

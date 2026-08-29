@@ -156,7 +156,21 @@
 
     <!-- 1. HOME VIEW (Matching Reference Layout) -->
     <section id="view-home" class="view-section">
-      <!-- EDITORIAL HERO SECTION -->
+        <!-- EDITORIAL APPOINTMENT SUMMARY SECTION -->
+        <div class="dash-panel" style="margin-top:20px; border-radius:18px;">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">📅 My Scheduled Appointments</span>
+            <button class="dash-panel-action" onclick="window.oneHealthApp.navigateTo('doctors')">+ Book Doctor →</button>
+          </div>
+          <div id="patientAppointmentsContainer" class="dash-queue" style="max-height:220px;">
+            <div class="dash-empty-state" style="padding:16px;">
+              <div style="font-size:24px; margin-bottom:4px;">🗓️</div>
+              <div style="font-size:13px; color:var(--text-muted);">No upcoming appointments yet. Find a doctor in the directory!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDITORIAL COMMUNITY STATS -->
       <div class="hero-editorial">
         <span class="hero-editorial-badge" data-i18n="hero_badge">OFFLINE-FIRST TELEMEDICINE & VETERINARY CARE</span>
         <h2 class="hero-editorial-title" data-i18n="hero_title">
@@ -394,6 +408,20 @@
         <!-- Right Column -->
         <div style="display:flex; flex-direction:column; gap:16px;">
 
+          <!-- Upcoming Appointments & Consultation Requests -->
+          <div class="dash-panel">
+            <div class="dash-panel-header">
+              <span class="dash-panel-title">📅 Patient Appointment Requests</span>
+              <span id="apptCountBadge" style="font-size:11px; background:var(--primary); color:#fff; padding:2px 8px; border-radius:50px; font-weight:700;">0 New</span>
+            </div>
+            <div id="doctorAppointmentsContainer" class="dash-queue" style="max-height:260px;">
+              <div class="dash-empty-state" style="padding:18px 0;">
+                <div style="font-size:24px; margin-bottom:4px;">📬</div>
+                <div style="font-size:13px; color:var(--text-muted);">No pending appointment requests</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Quick Actions -->
           <div class="dash-panel">
             <div class="dash-panel-header">
@@ -606,6 +634,78 @@
   <div id="videoConsultModal" class="modal-overlay" style="display:none;">
     <div id="videoModalContent" style="width:100%; display:flex; justify-content:center;">
       <!-- Populated dynamically by window.oneHealthWebRTC -->
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       APPOINTMENT BOOKING MODAL
+  ====================================================================== -->
+  <div id="appointmentModal" class="auth-modal-overlay" style="display:none;" onclick="if(event.target.id==='appointmentModal') window.oneHealthApp.closeAppointmentModal()">
+    <div class="auth-modal-card" style="max-width:480px;">
+      <div class="auth-modal-header">
+        <div class="auth-modal-brand">
+          <span style="font-size:26px;">📅</span>
+          <div>
+            <div class="auth-modal-title" id="apptDoctorName">Book Doctor Consultation</div>
+            <div class="auth-modal-sub" id="apptDoctorClinic">Clinic Appointment / Tele-Consult</div>
+          </div>
+        </div>
+        <button class="auth-modal-close" onclick="window.oneHealthApp.closeAppointmentModal()">✕</button>
+      </div>
+      <div class="auth-modal-body">
+        <form id="appointmentForm" onsubmit="window.oneHealthApp.submitAppointmentBooking(event)">
+          <input type="hidden" id="apptDoctorId" value="">
+          <input type="hidden" id="apptDoctorPhone" value="">
+          
+          <div class="auth-form-group">
+            <label for="apptPatientName">Patient Full Name *</label>
+            <input type="text" id="apptPatientName" class="auth-input" required placeholder="e.g. Ramesh Patil">
+          </div>
+          
+          <div class="auth-fields-row">
+            <div class="auth-form-group">
+              <label for="apptPatientPhone">Contact Phone *</label>
+              <input type="tel" id="apptPatientPhone" class="auth-input" required placeholder="+91 98765 43210">
+            </div>
+            <div class="auth-form-group">
+              <label for="apptPatientVillage">Village / Town</label>
+              <input type="text" id="apptPatientVillage" class="auth-input" value="Kopargaon">
+            </div>
+          </div>
+
+          <div class="auth-fields-row">
+            <div class="auth-form-group">
+              <label for="apptDate">Preferred Date *</label>
+              <input type="date" id="apptDate" class="auth-input" required>
+            </div>
+            <div class="auth-form-group">
+              <label for="apptSlot">Time Slot *</label>
+              <select id="apptSlot" class="auth-input">
+                <option value="Morning (9:00 AM - 1:00 PM)">Morning (9:00 AM - 1:00 PM)</option>
+                <option value="Afternoon (2:00 PM - 5:00 PM)">Afternoon (2:00 PM - 5:00 PM)</option>
+                <option value="Evening (5:30 PM - 8:30 PM)">Evening (5:30 PM - 8:30 PM)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="auth-form-group">
+            <label for="apptConsultType">Consultation Mode *</label>
+            <select id="apptConsultType" class="auth-input">
+              <option value="In-Clinic Visit">🏥 In-Clinic Physical Visit</option>
+              <option value="Video Tele-Consult">📹 Real-Time Video Call</option>
+            </select>
+          </div>
+
+          <div class="auth-form-group">
+            <label for="apptReason">Symptoms / Reason for Visit *</label>
+            <textarea id="apptReason" class="auth-input" rows="2" required placeholder="Describe chief complaint, fever, pain, symptoms..."></textarea>
+          </div>
+
+          <button type="submit" class="auth-submit-btn" style="margin-top:10px;">
+            ✅ Confirm & Request Appointment
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
