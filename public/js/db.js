@@ -442,6 +442,10 @@ class OneHealthDB {
     });
   }
 
+  async saveDoctorProfile(docData) {
+    return this.saveDoctor(docData);
+  }
+
   async getAllDoctors(roleFilter = null) {
     await this.init();
     return new Promise((resolve, reject) => {

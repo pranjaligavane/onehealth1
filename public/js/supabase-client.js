@@ -412,6 +412,86 @@ class OneHealthSupabaseClient {
   }
 
   // =========================================================================
+  // DOCTOR DIRECTORY SYNC & RETRIEVAL
+  // =========================================================================
+
+  /**
+   * Fetch all registered doctors & vets across Supabase and local offline accounts.
+   */
+  async fetchDoctorDirectory() {
+    let docs = [];
+
+    // 1. Fetch from Supabase online database if available
+    if (this.client && navigator.onLine) {
+      try {
+        const { data, error } = await this.client
+          .from('doctor_profiles')
+          .select('*');
+
+        if (!error && Array.isArray(data)) {
+          docs = data.map(d => ({
+            id: d.id || d.user_id,
+            user_id: d.user_id,
+            name: d.name,
+            title: d.title || (d.role === 'vet' ? 'BVSc' : 'MBBS'),
+            role: d.role,
+            specialization: d.specialization || (d.role === 'vet' ? 'Veterinary Medicine' : 'General Medicine'),
+            medical_reg_no: d.medical_reg_no || '',
+            education: d.education || '',
+            clinic_name: d.clinic_name || `${d.name} Clinic`,
+            consultation_fee: d.consultation_fee || '₹100',
+            village: d.village || 'Kopargaon',
+            address: d.address || d.village || 'Kopargaon',
+            phone: d.phone || '',
+            opd_timings: d.opd_timings || 'Mon-Sat 9am–5pm',
+            verified: true,
+            availability_state: d.availability_state || 'AVAILABLE',
+          }));
+        }
+      } catch (err) {
+        console.warn('[SupabaseClient] Error fetching doctor directory from Supabase:', err);
+      }
+    }
+
+    // 2. Include all local accounts with role doctor or vet
+    const localAccounts = this._getLocalAccounts();
+    const localDocs = localAccounts
+      .filter(a => a.role === 'doctor' || a.role === 'vet')
+      .map(d => ({
+        id: d.id || ('DOC-' + (d.email ? d.email.replace(/[^a-zA-Z0-9]/g, '') : Date.now())),
+        user_id: d.id,
+        name: d.name,
+        title: d.title || (d.role === 'vet' ? 'BVSc' : 'MBBS'),
+        role: d.role,
+        specialization: d.specialization || (d.role === 'vet' ? 'Veterinary Medicine' : 'General Medicine'),
+        medical_reg_no: d.medical_reg_no || '',
+        clinic_name: d.clinic_name || `${d.name} Clinic`,
+        consultation_fee: d.consultation_fee || '₹100',
+        village: d.village || 'Kopargaon',
+        address: d.address || d.village || 'Kopargaon',
+        phone: d.phone || '',
+        opd_timings: d.opd_timings || 'Mon-Sat 9am–5pm',
+        verified: true,
+        availability_state: 'AVAILABLE',
+      }));
+
+    // 3. Merge seamlessly without duplicates
+    const merged = [...docs];
+    for (const ld of localDocs) {
+      const exists = merged.some(m => 
+        (m.user_id && ld.user_id && m.user_id === ld.user_id) ||
+        (m.name && ld.name && m.name.toLowerCase() === ld.name.toLowerCase()) ||
+        (m.phone && ld.phone && m.phone === ld.phone)
+      );
+      if (!exists) {
+        merged.push(ld);
+      }
+    }
+
+    return merged;
+  }
+
+  // =========================================================================
   // DATA OPERATIONS (Legacy / Realtime Sync)
   // =========================================================================
 

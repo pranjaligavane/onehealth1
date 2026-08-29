@@ -351,9 +351,16 @@ class OneHealthApp {
     const villageFilter = document.getElementById('doctorVillageFilter') ? document.getElementById('doctorVillageFilter').value : '';
     const roleFilter = document.getElementById('doctorRoleFilter') ? document.getElementById('doctorRoleFilter').value : '';
     
-    // If online, sync latest verified doctors from backend/Supabase
-    if (navigator.onLine) {
-      try {
+    // Sync latest doctors from Supabase and local offline accounts
+    try {
+      if (window.oneHealthSupabase && window.oneHealthSupabase.fetchDoctorDirectory) {
+        const liveDocs = await window.oneHealthSupabase.fetchDoctorDirectory();
+        if (Array.isArray(liveDocs) && liveDocs.length > 0) {
+          for (const doc of liveDocs) {
+            await window.oneHealthDB.saveDoctor(doc);
+          }
+        }
+      } else if (navigator.onLine) {
         const resp = await fetch('/api/professionals/directory');
         if (resp.ok) {
           const serverDocs = await resp.json();
@@ -363,9 +370,9 @@ class OneHealthApp {
             }
           }
         }
-      } catch (err) {
-        console.warn('[Directory Sync] Fallback to cached IndexedDB:', err);
       }
+    } catch (err) {
+      console.warn('[Directory Sync] Fallback to cached IndexedDB:', err);
     }
 
     const allDocs = await window.oneHealthDB.getAllDoctors(roleFilter || null);
