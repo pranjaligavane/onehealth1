@@ -17,6 +17,9 @@
   
   <!-- Lightweight Chart.js for community disease surveillance -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Supabase Auth & Database SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -31,6 +34,24 @@
         </div>
       </div>
       <div class="header-controls">
+        <!-- Logged-in User Badge -->
+        <div id="authUserBadge" class="auth-user-badge" style="display:none;">
+          <span id="authUserIcon">👤</span>
+          <span id="authUserName">User</span>
+          <div class="auth-user-menu">
+            <button class="auth-menu-item" onclick="window.oneHealthAuth.openModal('signin')">👤 My Profile</button>
+            <button class="auth-menu-item auth-menu-danger" onclick="window.oneHealthAuth.signOut()">🚪 Sign Out</button>
+          </div>
+        </div>
+
+        <!-- Login Button (shown when logged out) -->
+        <button id="btnAuthLogin" class="auth-login-btn" onclick="window.oneHealthAuth.openModal('signin')">
+          🔐 Sign In
+        </button>
+
+        <!-- Supabase Config -->
+        <button class="auth-settings-btn" onclick="window.oneHealthAuth.openSettings()" title="Supabase Project Settings">⚙</button>
+
         <button id="btnSwitchRole" class="role-badge-btn" onclick="window.oneHealthApp.openRoleModal()" title="Switch Role (Doctor / Vet / Patient)">
           <span id="roleBadgeIcon">👤</span>
           <span id="roleBadgeText" data-i18n="role_patient">Patient</span>
@@ -416,6 +437,68 @@
     </div>
   </div>
 
+  <!-- =====================================================================
+       AUTH SIGN IN / SIGN UP MODAL
+  ====================================================================== -->
+  <div id="authModal" class="auth-modal-overlay" style="display:none;" onclick="window.oneHealthAuth._handleOverlayClick(event)">
+    <div class="auth-modal-card" id="authModalCard">
+      <div class="auth-modal-header">
+        <div class="auth-modal-brand">
+          <span style="font-size:28px;">🌱</span>
+          <div>
+            <div class="auth-modal-title">ONEHEALTH AI</div>
+            <div class="auth-modal-sub">Secure, Offline-First Healthcare</div>
+          </div>
+        </div>
+        <button class="auth-modal-close" onclick="window.oneHealthAuth.closeModal()" aria-label="Close">✕</button>
+      </div>
+      <div id="authModalBody" class="auth-modal-body">
+        <!-- Dynamically rendered by auth-ui.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       SUPABASE PROJECT SETTINGS MODAL
+  ====================================================================== -->
+  <div id="supabaseSettingsModal" class="auth-modal-overlay" style="display:none;">
+    <div class="auth-modal-card" style="max-width:480px;">
+      <div class="auth-modal-header">
+        <div class="auth-modal-brand">
+          <span style="font-size:24px;">⚙</span>
+          <div>
+            <div class="auth-modal-title">Supabase Project Setup</div>
+            <div class="auth-modal-sub">Connect your OneHealth Supabase project</div>
+          </div>
+        </div>
+        <button class="auth-modal-close" onclick="window.oneHealthAuth.closeSettings()">✕</button>
+      </div>
+      <div class="auth-modal-body">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px; line-height:1.6;">
+          Enter your Supabase project URL and anon key from
+          <strong>Supabase Dashboard → Project Settings → API</strong>.
+          These are stored locally on your device.
+        </p>
+        <div class="auth-form-group">
+          <label for="sbUrlInput">Project URL</label>
+          <input id="sbUrlInput" type="url" class="auth-input"
+            placeholder="https://xxxx.supabase.co" />
+        </div>
+        <div class="auth-form-group">
+          <label for="sbKeyInput">Anon / Public Key</label>
+          <input id="sbKeyInput" type="text" class="auth-input"
+            placeholder="eyJhbGciOiJIUzI1NiIs..." />
+        </div>
+        <button class="auth-submit-btn" onclick="window.oneHealthAuth.saveSettings()">
+          💾 Save & Connect
+        </button>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:12px; text-align:center;">
+          Your project credentials are saved only to this device's local storage.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- ROLE SELECTION MODAL -->
   <div id="roleSelectionModal" class="role-modal-overlay" style="display:none;">
     <div class="role-modal-content">
@@ -485,6 +568,9 @@
   <script src="./js/webrtc-consult.js"></script>
   <script src="./js/sync.js"></script>
   <script src="./js/analytics.js"></script>
+  <!-- Supabase Auth Client (must load before app.js) -->
+  <script src="./js/supabase-client.js"></script>
+  <script src="./js/auth-ui.js"></script>
   <script src="./js/app.js"></script>
 
 </body>

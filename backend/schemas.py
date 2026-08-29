@@ -1,23 +1,86 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-class UserBase(BaseModel):
-    username: str
+# =============================================================================
+# AUTH SCHEMAS
+# =============================================================================
+
+class UserRegister(BaseModel):
+    """Registration payload for a new user (patient or doctor/vet)."""
+    email: str
+    password: str
     name: str
-    role: str = "health_worker"
+    role: str = "patient"           # patient | health_worker | doctor | vet
+    phone: Optional[str] = None
+    village: Optional[str] = "Kopargaon"
+    specialization: Optional[str] = None
+    medical_reg_no: Optional[str] = None   # For doctors/vets
+    # Doctor-specific
+    clinic_name: Optional[str] = None
+    consultation_fee: Optional[str] = None
+    opd_timings: Optional[str] = None
+    address: Optional[str] = None
+
+class UserLogin(BaseModel):
+    """Login payload."""
+    email: str
+    password: str
+
+class UserProfileUpdate(BaseModel):
+    """Partial user profile update."""
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    village: Optional[str] = None
+    specialization: Optional[str] = None
+    medical_reg_no: Optional[str] = None
+
+class UserProfileResponse(BaseModel):
+    """Full user profile response."""
+    id: str
+    email: Optional[str]
+    name: str
+    role: str
+    village: Optional[str]
+    phone: Optional[str]
+    specialization: Optional[str]
+    medical_reg_no: Optional[str]
+    created_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+class AuthResponse(BaseModel):
+    """Response from sign-in / sign-up."""
+    access_token: Optional[str] = None
+    token_type: str = "bearer"
+    user: Optional[UserProfileResponse] = None
+    message: str = "success"
+
+# =============================================================================
+# EXISTING USER SCHEMAS (legacy / internal)
+# =============================================================================
+
+class UserBase(BaseModel):
+    name: str
+    role: str = "patient"
     village: Optional[str] = "Kopargaon"
     phone: Optional[str] = None
     specialization: Optional[str] = None
 
 class UserCreate(UserBase):
-    pass
+    email: Optional[str] = None
 
 class UserResponse(UserBase):
-    id: int
+    id: str
+    email: Optional[str]
     created_at: datetime
     class Config:
         from_attributes = True
+
+# =============================================================================
+# CLINICAL REVIEW SCHEMAS
+# =============================================================================
 
 class ClinicalReviewBase(BaseModel):
     case_id: str
@@ -30,17 +93,22 @@ class ClinicalReviewBase(BaseModel):
     is_urgent_referral: bool = False
 
 class ClinicalReviewCreate(ClinicalReviewBase):
-    pass
+    reviewer_id: Optional[str] = None  # Auth UUID
 
 class ClinicalReviewResponse(ClinicalReviewBase):
     id: int
+    reviewer_id: Optional[str]
     created_at: datetime
     class Config:
         from_attributes = True
 
+# =============================================================================
+# CASE SCHEMAS
+# =============================================================================
+
 class CaseBase(BaseModel):
     id: str
-    case_type: str # human_general, child_development, livestock
+    case_type: str  # human_general, child_development, livestock
     subject_name: str
     age_or_dob: Optional[str] = None
     gender_or_sex: Optional[str] = None
@@ -58,7 +126,8 @@ class CaseBase(BaseModel):
     images: Optional[List[str]] = None
     status: str = "screened"
     assigned_role: Optional[str] = None
-    assigned_doctor_id: Optional[int] = None
+    assigned_doctor_id: Optional[str] = None
+    created_by: Optional[str] = None
     client_created_at: Optional[datetime] = None
 
 class CaseCreate(CaseBase):
@@ -70,6 +139,10 @@ class CaseResponse(CaseBase):
     reviews: List[ClinicalReviewResponse] = []
     class Config:
         from_attributes = True
+
+# =============================================================================
+# SYNC SCHEMAS
+# =============================================================================
 
 class BatchSyncPayload(BaseModel):
     device_id: Optional[str] = "browser-client"
@@ -83,6 +156,10 @@ class BatchSyncResponse(BaseModel):
     server_updates: List[CaseResponse]
     server_timestamp: datetime
     active_alerts: List[Dict[str, Any]] = []
+
+# =============================================================================
+# OUTBREAK ALERT SCHEMA
+# =============================================================================
 
 class OutbreakAlertResponse(BaseModel):
     id: int

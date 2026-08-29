@@ -9,6 +9,7 @@ class OneHealthApp {
   constructor() {
     this.currentView = 'home';
     this.userRole = localStorage.getItem('onehealth_user_role') || null;
+    this.currentAuthUser = null;   // Populated when Supabase Auth session is active
     this.selectedScreeningType = 'human_general';
     this.capturedImages = [];
     this.activeCase = null;
@@ -37,13 +38,18 @@ class OneHealthApp {
     // 4. Initialize i18n
     window.oneHealthI18n.applyTranslations();
 
-    // 5. Apply User Role
+    // 5. Initialize Supabase Auth (restores session & sets up listeners)
+    if (window.oneHealthAuth) {
+      window.oneHealthAuth.init();
+    }
+
+    // 6. Apply User Role (from saved preference or auth)
     if (!this.userRole) {
       this.userRole = 'patient';
     }
     this.applyUserRole(this.userRole, false);
 
-    // 6. Initial Data Load & Pending Sync Count
+    // 7. Initial Data Load & Pending Sync Count
     await this.updatePendingSyncCount();
 
     // Trigger auto sync if online
@@ -74,6 +80,19 @@ class OneHealthApp {
     this.closeRoleModal();
     this.applyUserRole(role, true);
     this.showToast(`${window.oneHealthI18n.t(role === 'doctor' ? 'role_doctor' : role === 'vet' ? 'role_vet' : 'role_patient')}`);
+  }
+
+  /**
+   * Called by auth-ui.js after successful Supabase sign-in/sign-up.
+   * Updates the app role and stores the authenticated user profile.
+   */
+  setUserRoleFromAuth(role, authUser) {
+    this.currentAuthUser = authUser || null;
+    const validRole = ['patient', 'doctor', 'vet', 'health_worker'].includes(role) ? role : 'patient';
+    const mappedRole = validRole === 'health_worker' ? 'patient' : validRole;
+    this.userRole = mappedRole;
+    localStorage.setItem('onehealth_user_role', mappedRole);
+    this.applyUserRole(mappedRole, true);
   }
 
   applyUserRole(role, navigate = true) {

@@ -6,46 +6,49 @@ from backend.database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, index=True, nullable=False)
+    id = Column(String(36), primary_key=True, index=True)  # UUID from Supabase auth
+    email = Column(String(255), unique=True, index=True, nullable=True)
     name = Column(String(100), nullable=False)
-    role = Column(String(30), default="health_worker") # health_worker, doctor, vet, citizen, admin
+    role = Column(String(30), default="patient")  # patient, health_worker, doctor, vet, admin
     village = Column(String(100), default="Kopargaon")
     phone = Column(String(20), nullable=True)
-    specialization = Column(String(100), nullable=True) # e.g. MBBS General Physician, BVSc Veterinary Officer, ASHA Worker
+    specialization = Column(String(100), nullable=True)  # e.g. MBBS General Physician, BVSc
+    medical_reg_no = Column(String(50), nullable=True)   # For doctors & vets
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
 class Case(Base):
     __tablename__ = "cases"
 
-    id = Column(String(64), primary_key=True, index=True) # UUID or client-generated ID
-    case_type = Column(String(30), index=True, nullable=False) # human_general, child_development, livestock
+    id = Column(String(64), primary_key=True, index=True)  # UUID or client-generated ID
+    case_type = Column(String(30), index=True, nullable=False)  # human_general, child_development, livestock
     
     # Subject Identification
     subject_name = Column(String(100), nullable=False)
-    age_or_dob = Column(String(50), nullable=True) # e.g., "34" or "18 months" or "3 years"
-    gender_or_sex = Column(String(20), nullable=True) # Male, Female, Other, Bull, Cow, Goat, etc.
-    species = Column(String(50), nullable=True) # Cattle, Buffalo, Goat, Sheep, Poultry, Canine, Human
-    tag_or_id = Column(String(50), nullable=True) # Aadhaar last 4 / Animal Ear Tag #
+    age_or_dob = Column(String(50), nullable=True)
+    gender_or_sex = Column(String(20), nullable=True)
+    species = Column(String(50), nullable=True)
+    tag_or_id = Column(String(50), nullable=True)
     guardian_or_owner = Column(String(100), nullable=True)
     contact_phone = Column(String(20), nullable=True)
     village = Column(String(100), default="Kopargaon", index=True)
-    location_gps = Column(String(100), nullable=True) # "19.8824, 74.4789"
+    location_gps = Column(String(100), nullable=True)
     
     # Screening & Triage Info
-    risk_level = Column(String(20), index=True, default="GREEN") # GREEN, YELLOW, ORANGE, RED
+    risk_level = Column(String(20), index=True, default="GREEN")  # GREEN, YELLOW, ORANGE, RED
     triage_summary = Column(Text, nullable=True)
     primary_condition = Column(String(100), nullable=True)
     confidence_score = Column(Float, default=0.85)
     
-    # Payload storage (Vitals, Growth Milestones, Symptoms checklist, Image metadata)
+    # Payload storage
     data_payload = Column(JSON, nullable=True)
-    images = Column(JSON, nullable=True) # List of image references/base64 strings
+    images = Column(JSON, nullable=True)
     
     # Status & Workflow
-    status = Column(String(30), default="screened") # screened, escalated, reviewed, resolved
-    assigned_role = Column(String(30), nullable=True) # doctor, vet
-    assigned_doctor_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    status = Column(String(30), default="screened")  # screened, escalated, reviewed, resolved
+    assigned_role = Column(String(30), nullable=True)  # doctor, vet
+    assigned_doctor_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    created_by = Column(String(36), ForeignKey("users.id"), nullable=True)  # Auth-linked creator
     
     # Sync metadata
     client_created_at = Column(DateTime, default=datetime.datetime.utcnow)
@@ -60,12 +63,13 @@ class ClinicalReview(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     case_id = Column(String(64), ForeignKey("cases.id"), nullable=False, index=True)
+    reviewer_id = Column(String(36), ForeignKey("users.id"), nullable=True)  # Auth-linked
     reviewer_name = Column(String(100), nullable=False)
-    reviewer_role = Column(String(30), nullable=False) # doctor, vet
+    reviewer_role = Column(String(30), nullable=False)  # doctor, vet
     reviewer_notes = Column(Text, nullable=False)
     prescribed_treatment = Column(Text, nullable=True)
     escalation_instructions = Column(Text, nullable=True)
-    verified_risk_level = Column(String(20), nullable=True) # GREEN, YELLOW, ORANGE, RED
+    verified_risk_level = Column(String(20), nullable=True)
     is_urgent_referral = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -77,9 +81,9 @@ class OutbreakAlert(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(150), nullable=False)
     disease = Column(String(100), nullable=False)
-    target_group = Column(String(50), nullable=False) # Human, Cattle, Poultry, etc.
+    target_group = Column(String(50), nullable=False)
     village = Column(String(100), nullable=False)
-    severity = Column(String(20), default="WARNING") # WARNING, CRITICAL, RESOLVED
+    severity = Column(String(20), default="WARNING")  # WARNING, CRITICAL, RESOLVED
     description = Column(Text, nullable=False)
     precautions = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
@@ -88,8 +92,9 @@ class OutbreakAlert(Base):
 class DoctorProfile(Base):
     __tablename__ = "doctor_profiles"
 
-    id = Column(String(50), primary_key=True, index=True) # e.g. DOC-001 or VET-001
-    role = Column(String(20), default="doctor") # doctor, vet
+    id = Column(String(50), primary_key=True, index=True)  # e.g. DOC-001 or VET-001
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True, unique=True)  # Auth link
+    role = Column(String(20), default="doctor")  # doctor, vet
     name = Column(String(100), nullable=False)
     title = Column(String(100), nullable=False)
     medical_reg_no = Column(String(50), nullable=True)
@@ -110,12 +115,12 @@ class DoctorProfile(Base):
     lng = Column(Float, nullable=True)
     availability_state = Column(String(20), default="AVAILABLE")
     last_status_time = Column(String(50), nullable=True)
-    verified = Column(Boolean, default=True)
+    verified = Column(Boolean, default=False)  # False until admin reviews
 
 class ClinicalKnowledge(Base):
     __tablename__ = "clinical_knowledge"
 
-    id = Column(String(50), primary_key=True, index=True) # e.g. BODHI-0001
+    id = Column(String(50), primary_key=True, index=True)
     symptom = Column(String(200), nullable=False, index=True)
     raw_symptom_text = Column(Text, nullable=True)
     condition = Column(String(200), nullable=False, index=True)

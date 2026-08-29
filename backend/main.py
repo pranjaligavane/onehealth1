@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.database import engine, Base
-from backend.routers import cases, sync, professionals, analytics, knowledge, consultations
+from backend.routers import cases, sync, professionals, analytics, knowledge, consultations, auth
 from backend.seed import seed_database
 
 # Create database tables and seed sample data
@@ -35,6 +35,7 @@ app.include_router(professionals.router)
 app.include_router(analytics.router)
 app.include_router(knowledge.router)
 app.include_router(consultations.router)
+app.include_router(auth.router)
 
 # Mount Static Frontend
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
