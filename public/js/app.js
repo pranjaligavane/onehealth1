@@ -1986,10 +1986,11 @@ class OneHealthApp {
       PENDING: '<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">⏳ PENDING</span>',
       ACCEPTED: '<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">🟢 ACCEPTED</span>',
       COMPLETED: '<span style="background:#e0f2fe; color:#075985; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">✅ COMPLETED</span>',
+      DECLINED: '<span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">✕ DECLINED</span>',
     };
 
     container.innerHTML = forMe.map(a => `
-      <div class="dash-queue-card" style="background:#fff; border:1px solid var(--border-color); border-left:4px solid ${a.status === 'ACCEPTED' ? '#22c55e' : a.status === 'COMPLETED' ? '#0284c7' : '#f59e0b'};">
+      <div class="dash-queue-card" style="background:#fff; border:1px solid var(--border-color); border-left:4px solid ${a.status === 'ACCEPTED' ? '#22c55e' : a.status === 'COMPLETED' ? '#0284c7' : a.status === 'DECLINED' ? '#ef4444' : '#f59e0b'};">
         <div class="dash-queue-card-top">
           <div>
             <strong style="color:var(--text-main); font-size:13px;">👤 ${a.patient_name}</strong>
@@ -2003,24 +2004,25 @@ class OneHealthApp {
         <div style="font-size:11px; color:var(--text-muted); background:#f8fafc; padding:4px 8px; border-radius:6px; margin-bottom:6px;">
           📝 "${a.reason}"
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap;">
           <a href="tel:${a.patient_phone || ''}" style="font-size:11px; color:var(--primary); font-weight:700; text-decoration:none;">
-            📞 ${a.patient_phone || 'Call'}
+            📞 ${a.patient_phone || 'Call Patient'}
           </a>
-          <div style="display:flex; gap:4px;">
+          <div style="display:flex; gap:4px; flex-wrap:wrap;">
             ${a.status === 'PENDING' ? `
-              <button class="btn btn-primary btn-sm" style="padding:3px 8px; font-size:11px;" onclick="window.oneHealthApp.updateAppointmentStatus('${a.id}', 'ACCEPTED')">
-                Accept
+              <button class="btn btn-primary btn-sm" style="padding:4px 10px; font-size:11px; font-weight:800; background:#16a34a; border-color:#16a34a;" onclick="window.oneHealthApp.updateAppointmentStatus('${a.id}', 'ACCEPTED')">
+                ✓ Accept
+              </button>
+              <button class="btn btn-outline btn-sm" style="padding:4px 10px; font-size:11px; font-weight:800; color:#ef4444; border-color:#ef4444;" onclick="window.oneHealthApp.updateAppointmentStatus('${a.id}', 'DECLINED')">
+                ✕ Decline
               </button>
             ` : ''}
-            ${a.consultation_type === 'Video Tele-Consult' ? `
-              <button class="btn-video-call" style="padding:3px 8px; font-size:11px;" onclick='window.oneHealthApp.launchVideoConsult({name:"${a.patient_name}", phone:"${a.patient_phone}"})'>
-                📹 Call
-              </button>
-            ` : ''}
-            ${a.status !== 'COMPLETED' ? `
-              <button class="btn btn-outline btn-sm" style="padding:3px 8px; font-size:11px;" onclick="window.oneHealthApp.updateAppointmentStatus('${a.id}', 'COMPLETED')">
-                Mark Done
+            <button class="btn-video-call" style="padding:4px 10px; font-size:11px; font-weight:800;" onclick='window.oneHealthApp.launchVideoConsult({id:"${a.doctor_id || 'DOC-1'}", name:"${a.doctor_name || 'Doctor'}"})'>
+              📹 Video Call
+            </button>
+            ${(a.status === 'ACCEPTED' || a.status === 'PENDING') ? `
+              <button class="btn btn-outline btn-sm" style="padding:4px 10px; font-size:11px; font-weight:800;" onclick="window.oneHealthApp.updateAppointmentStatus('${a.id}', 'COMPLETED')">
+                ✓ Mark Done
               </button>
             ` : ''}
           </div>
@@ -2057,10 +2059,11 @@ class OneHealthApp {
       PENDING: '<span style="background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">⏳ REQUEST PENDING</span>',
       ACCEPTED: '<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">🟢 CONFIRMED</span>',
       COMPLETED: '<span style="background:#e0f2fe; color:#075985; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">✅ COMPLETED</span>',
+      DECLINED: '<span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:800;">✕ DECLINED</span>',
     };
 
     container.innerHTML = all.map(a => `
-      <div class="dash-queue-card" style="background:#fff; border:1px solid var(--border-color); border-left:4px solid ${a.status === 'ACCEPTED' ? '#22c55e' : '#f59e0b'};">
+      <div class="dash-queue-card" style="background:#fff; border:1px solid var(--border-color); border-left:4px solid ${a.status === 'ACCEPTED' ? '#22c55e' : a.status === 'DECLINED' ? '#ef4444' : '#f59e0b'};">
         <div class="dash-queue-card-top">
           <div>
             <strong style="color:var(--text-main); font-size:13px;">🩺 ${a.doctor_name}</strong>
@@ -2079,7 +2082,9 @@ class OneHealthApp {
   }
 
   async updateAppointmentStatus(id, newStatus) {
-    await window.oneHealthDB.updateConsultationStatus(id, newStatus);
+    if (window.oneHealthDB && window.oneHealthDB.updateConsultationStatus) {
+      await window.oneHealthDB.updateConsultationStatus(id, newStatus);
+    }
     try {
       const stored = JSON.parse(localStorage.getItem('onehealth_consultation_requests') || '[]');
       const item = stored.find(s => s.id === id);
@@ -2089,8 +2094,17 @@ class OneHealthApp {
       }
     } catch (e) {}
 
+    // Broadcast update across open tabs
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('onehealth_webrtc_bus');
+        bc.postMessage({ type: 'APPOINTMENT_UPDATED', id, status: newStatus });
+      }
+    } catch (e) {}
+
     this.showToast(`Appointment status updated to ${newStatus}`);
-    this._loadDoctorAppointments();
+    await this._loadDoctorAppointments();
+    await this._loadPatientAppointments();
   }
 
   // =========================================================================

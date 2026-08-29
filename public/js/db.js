@@ -515,6 +515,40 @@ class OneHealthDB {
     });
   }
 
+  async updateConsultationStatus(id, newStatus) {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction(['consultation_requests', 'sync_queue'], 'readwrite');
+      const store = tx.objectStore('consultation_requests');
+      const queueStore = tx.objectStore('sync_queue');
+      const req = store.get(id);
+
+      req.onsuccess = () => {
+        const item = req.result;
+        if (item) {
+          item.status = newStatus;
+          item.updated_at = new Date().toISOString();
+          store.put(item);
+          queueStore.add({
+            action: 'UPDATE_CONSULTATION_STATUS',
+            entity_id: id,
+            payload: { id, status: newStatus },
+            status: 'pending',
+            created_at: new Date().toISOString()
+          });
+        }
+      };
+
+      tx.oncomplete = () => {
+        if (window.oneHealthResilience) {
+          window.oneHealthResilience.logEvent('APPOINTMENT_UPDATED', 'appointment', id, { id, status: newStatus }).catch(() => {});
+        }
+        resolve(true);
+      };
+      tx.onerror = (e) => reject(e.target.error);
+    });
+  }
+
   // --- CASE OPERATIONS ---
 
   async saveCase(caseData, enqueueForSync = true) {
