@@ -254,23 +254,120 @@
       </div>
     </section>
 
-    <!-- 5. DOCTOR / VET CLINICAL PORTAL -->
+    <!-- 5. DOCTOR / VET CLINICAL PORTAL DASHBOARD -->
     <section id="view-portal" class="view-section">
-      <div class="card-box">
-        <div class="form-title-bar">
-          <h3 class="form-title" id="portalTitleHeader" data-i18n="portal_title">Clinical Station</h3>
-          <div style="display:flex; gap:6px;">
-            <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
-              📍 <span data-i18n="btn_update_my_profile">Update My Profile & Location</span>
-            </button>
+
+      <!-- Welcome Banner -->
+      <div class="dash-welcome-banner" id="dashWelcomeBanner">
+        <div class="dash-welcome-left">
+          <div class="dash-greeting" id="dashGreeting">Good morning, Doctor 👋</div>
+          <div class="dash-date" id="dashDateLine"></div>
+          <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+            <span class="dash-badge" id="dashRoleBadge">🩺 Doctor</span>
+            <span class="dash-badge dash-badge-sync" id="dashSyncBadge">🔄 Checking sync...</span>
+            <span class="dash-badge dash-badge-verify" id="dashVerifyBadge" style="display:none;">⚠️ Profile Pending Verification</span>
           </div>
         </div>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;" id="portalDescHeader" data-i18n="portal_desc">
-          High-priority tele-triage queue for verified clinical diagnosis, prescription sign-off, and hospital referrals.
-        </p>
-
-        <div id="portalQueueContainer"></div>
+        <div class="dash-welcome-right">
+          <button class="dash-profile-btn" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
+            ✏️ Update Profile
+          </button>
+        </div>
       </div>
+
+      <!-- KPI Stats Row -->
+      <div class="dash-stats-row">
+        <div class="dash-stat-card dash-stat-blue">
+          <div class="dash-stat-icon">📋</div>
+          <div class="dash-stat-value" id="statTotalToday">—</div>
+          <div class="dash-stat-label">Cases Today</div>
+        </div>
+        <div class="dash-stat-card dash-stat-red">
+          <div class="dash-stat-icon">🚨</div>
+          <div class="dash-stat-value" id="statCritical">—</div>
+          <div class="dash-stat-label">Critical (RED)</div>
+        </div>
+        <div class="dash-stat-card dash-stat-orange">
+          <div class="dash-stat-icon">⏳</div>
+          <div class="dash-stat-value" id="statPending">—</div>
+          <div class="dash-stat-label">Pending Review</div>
+        </div>
+        <div class="dash-stat-card dash-stat-green">
+          <div class="dash-stat-icon">☁️</div>
+          <div class="dash-stat-value" id="statSynced">—</div>
+          <div class="dash-stat-label">Synced to Cloud</div>
+        </div>
+      </div>
+
+      <!-- Main Grid: Triage Queue + Quick Actions -->
+      <div class="dash-main-grid">
+
+        <!-- Priority Triage Queue -->
+        <div class="dash-panel">
+          <div class="dash-panel-header">
+            <span class="dash-panel-title">🚨 Priority Triage Queue</span>
+            <button class="dash-panel-action" onclick="window.oneHealthApp.navigateTo('cases')">View All →</button>
+          </div>
+          <div id="portalQueueContainer" class="dash-queue">
+            <div class="dash-empty-state">
+              <div style="font-size:36px; margin-bottom:8px;">✅</div>
+              <div>Loading your queue...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div style="display:flex; flex-direction:column; gap:16px;">
+
+          <!-- Quick Actions -->
+          <div class="dash-panel">
+            <div class="dash-panel-header">
+              <span class="dash-panel-title">⚡ Quick Actions</span>
+            </div>
+            <div class="dash-quick-grid">
+              <button class="dash-quick-btn" onclick="window.oneHealthApp.navigateTo('screen')">
+                <span class="dash-quick-icon">🩺</span>
+                <span>New Screening</span>
+              </button>
+              <button class="dash-quick-btn" onclick="window.oneHealthApp.navigateTo('cases')">
+                <span class="dash-quick-icon">📂</span>
+                <span>All Cases</span>
+              </button>
+              <button class="dash-quick-btn" onclick="window.oneHealthApp.navigateTo('analytics')">
+                <span class="dash-quick-icon">📊</span>
+                <span>Analytics</span>
+              </button>
+              <button class="dash-quick-btn" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
+                <span class="dash-quick-icon">📍</span>
+                <span>My Profile</span>
+              </button>
+              <button class="dash-quick-btn" onclick="window.oneHealthWebRTC ? window.oneHealthWebRTC.openCallDialog() : window.oneHealthApp.showToast('Video call module loading...')">
+                <span class="dash-quick-icon">🎥</span>
+                <span>Video Call</span>
+              </button>
+              <button class="dash-quick-btn" onclick="window.oneHealthApp.exportData()">
+                <span class="dash-quick-icon">📤</span>
+                <span>Export Data</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Today's Activity Timeline -->
+          <div class="dash-panel">
+            <div class="dash-panel-header">
+              <span class="dash-panel-title">🗓️ Today's Activity</span>
+            </div>
+            <div id="dashTimeline" class="dash-timeline">
+              <div class="dash-empty-state" style="padding:20px 0;">
+                <div style="font-size:24px; margin-bottom:6px;">📭</div>
+                <div style="font-size:13px;">No activity yet today</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </section>
 
     <!-- 6. COMPREHENSIVE DOCTOR / VET PROFILE & LOCATION MANAGER -->

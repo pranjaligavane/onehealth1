@@ -1557,48 +1557,215 @@ class OneHealthApp {
   }
 
   // =========================================================================
-  // DOCTOR / VET PORTAL QUEUE
+  // DOCTOR / VET DASHBOARD — Real Data
   // =========================================================================
   async loadPortalQueue() {
+    await this._loadDashboardWelcome();
+    await this._loadDashboardStats();
+    await this._loadDashboardQueue();
+    await this._loadDashboardTimeline();
+  }
+
+  _getDashboardGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  async _loadDashboardWelcome() {
+    const greeting = document.getElementById('dashGreeting');
+    const dateLine = document.getElementById('dashDateLine');
+    const roleBadge = document.getElementById('dashRoleBadge');
+    const syncBadge = document.getElementById('dashSyncBadge');
+
+    // Personalize with real auth user name
+    let doctorName = 'Doctor';
+    if (window.oneHealthSupabase && window.oneHealthSupabase.currentUser) {
+      doctorName = window.oneHealthSupabase.currentUser.name || window.oneHealthSupabase.currentUser.email || 'Doctor';
+    }
+
+    if (greeting) greeting.textContent = `${this._getDashboardGreeting()}, ${doctorName} 👋`;
+
+    if (dateLine) {
+      const now = new Date();
+      dateLine.textContent = now.toLocaleDateString('en-IN', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
+    if (roleBadge) {
+      roleBadge.textContent = this.userRole === 'vet' ? '🐄 Veterinary Doctor' : '🩺 Medical Doctor';
+    }
+
+    if (syncBadge) {
+      if (navigator.onLine) {
+        syncBadge.textContent = '🟢 Online — Cloud Sync Active';
+        syncBadge.style.background = 'rgba(16,185,129,0.15)';
+        syncBadge.style.color = '#065f46';
+      } else {
+        syncBadge.textContent = '🔴 Offline — Local Mode';
+        syncBadge.style.background = 'rgba(239,68,68,0.12)';
+        syncBadge.style.color = '#991b1b';
+      }
+    }
+  }
+
+  async _loadDashboardStats() {
+    const cases = await window.oneHealthDB.getAllCases();
+    const today = new Date().toDateString();
+
+    const todayCases = cases.filter(c => {
+      const d = c.client_created_at || c.created_at || '';
+      return d && new Date(d).toDateString() === today;
+    });
+
+    const critical = cases.filter(c => c.risk_level === 'RED').length;
+    const pending  = cases.filter(c => !c.doctor_notes || c.doctor_notes.trim() === '').length;
+    const synced   = cases.filter(c => c.sync_status === 'synced').length;
+
+    const animateCount = (el, target) => {
+      if (!el) return;
+      let current = 0;
+      const step = Math.max(1, Math.floor(target / 20));
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = current;
+        if (current >= target) clearInterval(timer);
+      }, 40);
+    };
+
+    animateCount(document.getElementById('statTotalToday'), todayCases.length);
+    animateCount(document.getElementById('statCritical'),   critical);
+    animateCount(document.getElementById('statPending'),    pending);
+    animateCount(document.getElementById('statSynced'),     synced);
+  }
+
+  async _loadDashboardQueue() {
     const container = document.getElementById('portalQueueContainer');
     if (!container) return;
 
-    const role = this.userRole || 'doctor';
     const cases = await window.oneHealthDB.getAllCases();
-    const lang = window.oneHealthI18n.currentLang;
+    const role  = this.userRole || 'doctor';
 
+    // Filter by relevant case type
     const filtered = cases.filter(c => {
-      if (role === 'vet') {
-        return c.case_type === 'livestock';
-      } else {
-        return c.case_type === 'human_general' || c.case_type === 'child_development';
-      }
+      if (role === 'vet') return c.case_type === 'livestock';
+      return c.case_type === 'human_general' || c.case_type === 'child_development' || !c.case_type;
     });
 
+    // Sort by risk (RED first) then recency
     const weights = { RED: 4, ORANGE: 3, YELLOW: 2, GREEN: 1 };
-    filtered.sort((a, b) => (weights[b.risk_level] || 0) - (weights[a.risk_level] || 0));
+    filtered.sort((a, b) => {
+      const riskDiff = (weights[b.risk_level] || 0) - (weights[a.risk_level] || 0);
+      if (riskDiff !== 0) return riskDiff;
+      return new Date(b.client_created_at || 0) - new Date(a.client_created_at || 0);
+    });
 
-    if (filtered.length === 0) {
-      container.innerHTML = `<p class="text-muted" style="text-align:center; padding:30px;">${lang === 'mr' ? 'सध्या तपासणीसाठी कोणतीही प्रलंबित प्रकरणे नाहीत.' : lang === 'hi' ? 'वर्तमान में कोई लंबित केस नहीं है।' : 'No pending cases in your triage queue.'}</p>`;
+    // Show top 8 in queue
+    const queue = filtered.slice(0, 8);
+
+    if (queue.length === 0) {
+      container.innerHTML = `
+        <div class="dash-empty-state">
+          <div style="font-size:40px; margin-bottom:10px;">✅</div>
+          <div style="font-weight:700; margin-bottom:4px;">All caught up!</div>
+          <div style="font-size:13px; color:var(--text-muted);">No pending cases in your triage queue.</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="window.oneHealthApp.navigateTo('screen')">
+            + Start New Screening
+          </button>
+        </div>`;
       return;
     }
 
-    container.innerHTML = filtered.map(c => `
-      <div class="case-card" onclick="window.oneHealthApp.openCaseModal('${c.id}')">
-        <div class="case-card-header">
-          <div>
-            <strong>${c.subject_name}</strong>
-            <span style="font-size:11px; color:var(--text-muted);"> (${c.age_or_dob || 'N/A'})</span>
+    const riskColor = { RED: '#ef4444', ORANGE: '#f97316', YELLOW: '#eab308', GREEN: '#22c55e' };
+    const riskBg    = { RED: '#fef2f2', ORANGE: '#fff7ed', YELLOW: '#fefce8', GREEN: '#f0fdf4' };
+
+    container.innerHTML = queue.map(c => {
+      const timeAgo = this._timeAgo(c.client_created_at || c.created_at);
+      const risk = c.risk_level || 'GREEN';
+      const hasNotes = c.doctor_notes && c.doctor_notes.trim().length > 0;
+      return `
+        <div class="dash-queue-card" onclick="window.oneHealthApp.openCaseModal('${c.id}')"
+          style="border-left: 4px solid ${riskColor[risk] || '#22c55e'}; background:${riskBg[risk] || '#f0fdf4'};">
+          <div class="dash-queue-card-top">
+            <div>
+              <span class="dash-queue-name">${c.subject_name || 'Unknown Patient'}</span>
+              <span class="dash-queue-meta"> · ${c.age_or_dob || 'N/A'} · ${c.village || ''}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              ${hasNotes ? '<span style="font-size:10px; background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-weight:700;">Reviewed</span>' : ''}
+              <span class="badge badge-${risk.toLowerCase()}">${risk}</span>
+            </div>
           </div>
-          <span class="badge badge-${(c.risk_level || 'GREEN').toLowerCase()}">${c.risk_level}</span>
-        </div>
-        <div class="case-condition">${c.primary_condition}</div>
-        <div class="case-footer">
-          <span>📍 ${c.village}</span>
-          <span class="cat-btn" style="padding:4px 8px; font-size:11px;">${lang === 'mr' ? 'तपासा ➔' : lang === 'hi' ? 'समीक्षा ➔' : 'Review Case ➔'}</span>
-        </div>
-      </div>
-    `).join('');
+          <div class="dash-queue-condition">${c.primary_condition || 'Awaiting diagnosis'}</div>
+          <div class="dash-queue-footer">
+            <span>⏱ ${timeAgo}</span>
+            <span style="color:var(--primary); font-weight:700; font-size:12px;">Review →</span>
+          </div>
+        </div>`;
+    }).join('');
+
+    if (filtered.length > 8) {
+      container.innerHTML += `
+        <button class="btn btn-outline btn-sm" style="width:100%; margin-top:10px;"
+          onclick="window.oneHealthApp.navigateTo('cases')">
+          View all ${filtered.length} cases →
+        </button>`;
+    }
+  }
+
+  async _loadDashboardTimeline() {
+    const container = document.getElementById('dashTimeline');
+    if (!container) return;
+
+    const cases = await window.oneHealthDB.getAllCases();
+    const today = new Date().toDateString();
+
+    const todayCases = cases
+      .filter(c => {
+        const d = c.client_created_at || c.created_at || '';
+        return d && new Date(d).toDateString() === today;
+      })
+      .sort((a, b) => new Date(b.client_created_at || 0) - new Date(a.client_created_at || 0))
+      .slice(0, 6);
+
+    if (todayCases.length === 0) {
+      container.innerHTML = `
+        <div class="dash-empty-state" style="padding:20px 0;">
+          <div style="font-size:24px; margin-bottom:6px;">📭</div>
+          <div style="font-size:13px; color:var(--text-muted);">No cases created today</div>
+        </div>`;
+      return;
+    }
+
+    const riskIcon = { RED: '🔴', ORANGE: '🟠', YELLOW: '🟡', GREEN: '🟢' };
+    container.innerHTML = todayCases.map(c => {
+      const time = c.client_created_at
+        ? new Date(c.client_created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        : '—';
+      const risk = c.risk_level || 'GREEN';
+      return `
+        <div class="dash-timeline-item" onclick="window.oneHealthApp.openCaseModal('${c.id}')">
+          <div class="dash-timeline-time">${time}</div>
+          <div class="dash-timeline-dot">${riskIcon[risk] || '🟢'}</div>
+          <div class="dash-timeline-content">
+            <div class="dash-timeline-name">${c.subject_name || 'Patient'}</div>
+            <div class="dash-timeline-condition">${c.primary_condition || 'Screening'}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  _timeAgo(dateStr) {
+    if (!dateStr) return 'just now';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
   }
 
   // =========================================================================
