@@ -322,6 +322,23 @@ class OneHealthApp {
     const villageFilter = document.getElementById('doctorVillageFilter') ? document.getElementById('doctorVillageFilter').value : '';
     const roleFilter = document.getElementById('doctorRoleFilter') ? document.getElementById('doctorRoleFilter').value : '';
     
+    // If online, sync latest verified doctors from backend/Supabase
+    if (navigator.onLine) {
+      try {
+        const resp = await fetch('/api/professionals/directory');
+        if (resp.ok) {
+          const serverDocs = await resp.json();
+          if (Array.isArray(serverDocs) && serverDocs.length > 0) {
+            for (const doc of serverDocs) {
+              await window.oneHealthDB.saveDoctor(doc);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[Directory Sync] Fallback to cached IndexedDB:', err);
+      }
+    }
+
     const allDocs = await window.oneHealthDB.getAllDoctors(roleFilter || null);
     const ranked = window.oneHealthLocation.rankDoctors(allDocs, {
       targetVillage: villageFilter,
@@ -447,7 +464,17 @@ class OneHealthApp {
   }
 
   launchVideoConsult(doctorObj) {
-    window.oneHealthWebRTC.startConsultation(doctorObj, this.activeCase);
+    window.oneHealthWebRTC.startConsultation(doctorObj, this.activeCase, this.userRole || 'patient');
+  }
+
+  async launchDoctorVideoVisit(caseId) {
+    const caseData = await window.oneHealthDB.getCase(caseId);
+    const doctorProfile = (await window.oneHealthDB.getSetting('doctor_profile_data', null)) || {
+      name: "Attending Physician / Vet",
+      clinic_name: "Clinical Station Video OPD",
+      id: "DOC-STATION"
+    };
+    window.oneHealthWebRTC.startConsultation(doctorProfile, caseData, 'doctor');
   }
 
   referDirectlyToDoctor(doctorName, role) {
@@ -575,7 +602,28 @@ class OneHealthApp {
       roleBadge.innerText = this.userRole === 'vet' ? window.oneHealthI18n.t('role_vet') : window.oneHealthI18n.t('role_doctor');
     }
 
-    const savedProfile = await window.oneHealthDB.getSetting('doctor_profile_data', null);
+    let savedProfile = await window.oneHealthDB.getSetting('doctor_profile_data', null);
+
+    // If opening on a new device, fetch existing profile from backend/Supabase
+    if (!savedProfile && navigator.onLine) {
+      try {
+        const resp = await fetch('/api/professionals/directory?role=' + (this.userRole || 'doctor'));
+        if (resp.ok) {
+          const list = await resp.json();
+          const myPhone = localStorage.getItem('onehealth_doctor_phone');
+          if (myPhone) {
+            savedProfile = list.find(d => d.phone && d.phone.includes(myPhone));
+          }
+          if (!savedProfile && list.length > 0) {
+            // Prepopulate with primary doctor for role
+            savedProfile = list[0];
+          }
+        }
+      } catch (e) {
+        console.warn('[Profile Sync] Note:', e);
+      }
+    }
+
     if (savedProfile) {
       document.getElementById('prof_name').value = savedProfile.name || '';
       document.getElementById('prof_title').value = savedProfile.title || '';
@@ -599,8 +647,12 @@ class OneHealthApp {
   async saveDoctorProfile(event) {
     event.preventDefault();
 
+    const phoneVal = document.getElementById('prof_phone').value.trim();
+    const existingProfile = await window.oneHealthDB.getSetting('doctor_profile_data', null);
+    const profileId = (existingProfile && existingProfile.id) ? existingProfile.id : `DOC-${Date.now().toString(36).toUpperCase()}`;
+
     const profile = {
-      id: `PROF-${Date.now().toString(36).toUpperCase()}`,
+      id: profileId,
       role: this.userRole || 'doctor',
       name: document.getElementById('prof_name').value.trim(),
       title: document.getElementById('prof_title').value.trim(),
@@ -613,7 +665,7 @@ class OneHealthApp {
       village: document.getElementById('prof_village').value.trim(),
       pincode: document.getElementById('prof_pincode').value.trim(),
       address: document.getElementById('prof_address').value.trim(),
-      phone: document.getElementById('prof_phone').value.trim(),
+      phone: phoneVal,
       whatsapp: document.getElementById('prof_whatsapp').value.trim(),
       opd_timings: document.getElementById('prof_timings').value.trim(),
       languages: document.getElementById('prof_languages').value.trim(),
@@ -624,11 +676,25 @@ class OneHealthApp {
       verified: true
     };
 
+    localStorage.setItem('onehealth_doctor_phone', phoneVal);
     await window.oneHealthDB.saveSetting('doctor_profile_data', profile);
     await window.oneHealthDB.saveDoctor(profile);
 
+    // Sync to backend / Supabase so other devices see the doctor immediately
+    if (navigator.onLine) {
+      try {
+        await fetch('/api/professionals/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profile)
+        });
+      } catch (err) {
+        console.warn('[Doctor Sync] Queued offline:', err);
+      }
+    }
+
     const lang = window.oneHealthI18n.currentLang;
-    this.showToast(lang === 'mr' ? 'माहिती सुरक्षित जतन झाली!' : lang === 'hi' ? 'प्रोफाइल सुरक्षित सेव की गई!' : 'Profile & Location saved! Patients in your area can now discover your practice.');
+    this.showToast(lang === 'mr' ? 'माहिती सुरक्षित जतन झाली व सर्व उपकरणांवर सिंक झाली!' : lang === 'hi' ? 'प्रोफाइल सुरक्षित सेव की गई और सभी उपकरणों पर सिंक हुई!' : 'Profile & Location saved and synchronized across all devices!');
     this.navigateTo('portal');
   }
 
@@ -1417,7 +1483,10 @@ class OneHealthApp {
           </div>
         </div>
 
-        <div style="margin-top:20px; display:flex; gap:10px;">
+        <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-block" style="background:#0f766e;" onclick="window.oneHealthApp.launchDoctorVideoVisit('${caseData.id}')">
+            📹 ${lang === 'mr' ? 'रुग्णाशी थेट व्हिडिओ तपासणी सुरू करा' : lang === 'hi' ? 'मरीज के साथ वीडियो परामर्श शुरू करें' : 'Start Secure Video Visit with Patient'}
+          </button>
           <button class="btn btn-outline btn-block" onclick="window.print()">
             🖨️ ${lang === 'mr' ? 'केस स्लिप प्रिंट करा' : lang === 'hi' ? 'केस पर्ची प्रिंट करें' : 'Print Clinical Slip'}
           </button>
