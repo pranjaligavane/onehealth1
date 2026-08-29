@@ -130,25 +130,28 @@ body {
 .auth-settings-btn:hover { background: rgba(255,255,255,0.22); }
 
 .header-trust-btn {
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.35);
-  color: #fff;
-  padding: 4px 10px;
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  border: 1.5px solid #2dd4bf;
+  color: #ffffff !important;
+  padding: 5px 12px;
   height: 32px;
-  border-radius: 7px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   white-space: nowrap;
-  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.3);
+  transition: all 0.2s ease;
 }
 .header-trust-btn:hover {
   background: #ffffff;
-  color: #0f766e;
+  color: #0f766e !important;
+  border-color: #ffffff;
   transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .brand-title {
@@ -1967,7 +1970,6 @@ body {
   border: 1px solid rgba(255,255,255,0.2);
 }
 .dash-badge-sync { background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3); }
-.dash-badge-verify { background: rgba(245,158,11,0.15); color: #fcd34d; border-color: rgba(245,158,11,0.3); }
 .dash-profile-btn {
   background: rgba(255,255,255,0.15);
   border: 1.5px solid rgba(255,255,255,0.3);

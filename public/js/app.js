@@ -253,7 +253,9 @@ class OneHealthApp {
       el.classList.remove('active');
     });
 
-    const target = document.getElementById(`view-${viewId}`);
+    const target = document.getElementById(`view-${viewId}`) 
+      || document.getElementById(`view-${viewId.replace(/_/g, '-')}`) 
+      || document.getElementById(`view-${viewId.replace(/-/g, '_')}`);
     if (target) {
       target.classList.add('active');
       window.scrollTo(0, 0);
@@ -275,9 +277,9 @@ class OneHealthApp {
       this.loadAnalytics();
     } else if (viewId === 'resilience') {
       this.loadResilienceDashboard();
-    } else if (viewId === 'trust_verify') {
+    } else if (viewId === 'trust_verify' || viewId === 'trust-verify') {
       this.loadTrustVerifyView();
-    } else if (viewId === 'trust_admin') {
+    } else if (viewId === 'trust_admin' || viewId === 'trust-admin') {
       this.loadTrustAdminDashboard();
     } else if (viewId === 'screen') {
       this.renderScreeningForm();
