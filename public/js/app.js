@@ -810,23 +810,28 @@ class OneHealthApp {
           </div>
         </div>
 
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">📋 ${t('lbl_symptoms')}</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:var(--text-main);">📋 ${t('lbl_symptoms')} (EkaCare BODHI-S & General)</h4>
         <div class="checkbox-grid">
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="fever_chills"> ${s_fever}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="eye_pain_retroorbital"> ${s_eye}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="skin_rash_petechiae"> ${s_rash}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="severe_bodyache"> ${s_body}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="cough_chronic_2wks"> ${s_cough}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="yellow_sputum_bronchitis"> 🔬 ${lang === 'mr' ? 'पिवळी/हिरवी थुंकी व खोकला (BODHI-S Bronchitis)' : lang === 'hi' ? 'पीला/हरा कफ व खांसी (BODHI-S)' : 'Productive cough with yellow/green sputum (BODHI-S)'}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="night_sweats_weightloss"> ${s_sweat}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="watery_diarrhea"> ${s_diarrhea}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="epigastric_pain_pancreas"> 🔬 ${lang === 'mr' ? 'पोटात तीव्र कळा व पाठीत कळ मारणे (Pancreatitis)' : lang === 'hi' ? 'पेट में तेज दर्द जो पीठ तक जाए' : 'Severe epigastric pain radiating to back (BODHI-S)'}</label>
+          <label class="checkbox-label"><input type="checkbox" name="symptom" value="jaundice_cholecystitis"> 🔬 ${lang === 'mr' ? 'कावीळ व पोटात उजव्या बाजूला दुखणे (Cholecystitis)' : lang === 'hi' ? 'पीलिया व दाईं ओर पेट दर्द' : 'Jaundice & Right upper quadrant pain (BODHI-S)'}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="vomiting_nausea"> ${s_vomit}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="stepladder_fever"> ${s_step}</label>
           <label class="checkbox-label"><input type="checkbox" name="symptom" value="non_healing_ulcer"> ${s_ulcer}</label>
         </div>
 
-        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:#991b1b;">🚨 ${t('lbl_red_flags')}</h4>
+        <h4 style="font-size:14px; font-weight:700; margin:16px 0 8px 0; color:#991b1b;">🚨 ${t('lbl_red_flags')} (BODHI-S Emergency Indicators)</h4>
         <div class="checkbox-grid">
           <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="chest_pain_severe"> ${rf_chest}</label>
+          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="chest_discomfort_exertion"> 🔬 ${lang === 'mr' ? 'छातीत भरून येणे / चालताना धाप लागणे (Acute MI)' : lang === 'hi' ? 'सीने में भारीपन / चलने पर सांस फूलना (Acute MI)' : 'Crushing chest discomfort / aggravated on exertion (Acute MI)'}</label>
+          <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="pregnancy_bleeding_pain"> 🔬 ${lang === 'mr' ? 'गर्भारपणात तीव्र पोटदुखी / रक्तस्राव (Abruptio Placenta)' : lang === 'hi' ? 'गर्भावस्था में तेज दर्द / रक्तस्राव (Abruptio Placenta)' : 'Pregnancy bleeding / severe pain / tender uterus (Abruptio Placenta)'}</label>
           <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="sudden_weakness_speech"> ${rf_stroke}</label>
           <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="severe_breathlessness_rest"> ${rf_breath}</label>
           <label class="checkbox-label red-flag"><input type="checkbox" name="redflag" value="altered_consciousness"> ${rf_sensorium}</label>
@@ -1015,7 +1020,8 @@ class OneHealthApp {
       const symptoms = Array.from(document.querySelectorAll('input[name="symptom"]:checked')).map(cb => cb.value);
       const redFlags = Array.from(document.querySelectorAll('input[name="redflag"]:checked')).map(cb => cb.value);
 
-      payload = { vitals, symptoms, red_flags: redFlags, duration_days: 3 };
+      const allEvaluationSymptoms = [...symptoms, ...redFlags];
+      payload = { vitals, symptoms: allEvaluationSymptoms, red_flags: redFlags, duration_days: 3 };
       aiResult = window.oneHealthAI.evaluateHumanGeneral(payload);
 
     } else if (this.selectedScreeningType === 'child_development') {

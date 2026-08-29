@@ -1,13 +1,13 @@
 /**
  * ONEHEALTH AI - Offline IndexedDB Database Layer & Multi-Store Persistence Engine
  * Supports Cases, Sync Queue, Media Blobs, Alerts, Settings, Doctors Directory with GPS & Availability,
- * and Consultation Requests.
+ * Consultation Requests, and EkaCare BODHI-S Medical Knowledge Graph.
  */
 
 class OneHealthDB {
   constructor() {
     this.dbName = 'OneHealthOfflineDB';
-    this.version = 5;
+    this.version = 6;
     this.db = null;
   }
 
@@ -66,12 +66,21 @@ class OneHealthDB {
           consultStore.createIndex('doctor_id', 'doctor_id', { unique: false });
           consultStore.createIndex('status', 'status', { unique: false });
         }
+
+        // 8. EkaCare BODHI-S Medical Knowledge Graph Store
+        if (!db.objectStoreNames.contains('medical_knowledge')) {
+          const kbStore = db.createObjectStore('medical_knowledge', { keyPath: 'id' });
+          kbStore.createIndex('symptom', 'symptom', { unique: false });
+          kbStore.createIndex('condition', 'condition', { unique: false });
+          kbStore.createIndex('source', 'source', { unique: false });
+        }
       };
 
       request.onsuccess = async (event) => {
         this.db = event.target.result;
         console.log('[IndexedDB] Initialized successfully:', this.dbName);
         await this.checkAndSeedInitialData();
+        await this.checkAndSeedBodhiSKnowledge();
         resolve(this.db);
       };
 
@@ -79,6 +88,86 @@ class OneHealthDB {
         console.error('[IndexedDB] Open error:', event.target.error);
         reject(event.target.error);
       };
+    });
+  }
+
+  // --- EKACARE BODHI-S KNOWLEDGE BASE SEEDING & LOOKUP ---
+  async checkAndSeedBodhiSKnowledge() {
+    try {
+      const existing = await this.getAllMedicalKnowledge();
+      if (existing.length === 0) {
+        console.log('[IndexedDB] Seeding EkaCare BODHI-S Clinical Knowledge Base...');
+        let kbData = [];
+        try {
+          const resp = await fetch('./data/bodhi_s_knowledge.json');
+          if (resp.ok) {
+            kbData = await resp.json();
+          }
+        } catch (e) {
+          console.warn('[IndexedDB] Fetch fallback to embedded BODHI-S dataset:', e);
+        }
+
+        if (!kbData || kbData.length === 0) {
+          // Embedded core BODHI-S dataset fallback
+          kbData = [
+            { id: "BODHI-0001", symptom: "Abdominal pain in pregnancy", raw_symptom_text: "Abdominal pain in pregnancy", condition: "Abruptio Placenta", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0002", symptom: "Abdominal pain in pregnancy", raw_symptom_text: "Abdominal pain in pregnancy <severity> severe", condition: "Abruptio Placenta", attributes: { severity: "severe" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0003", symptom: "Back pain", raw_symptom_text: "Back pain", condition: "Abruptio Placenta", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0004", symptom: "Dizziness", raw_symptom_text: "Dizziness", condition: "Abruptio Placenta", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0005", symptom: "Reduced fetal movement", raw_symptom_text: "Reduced fetal movement", condition: "Abruptio Placenta", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0006", symptom: "Abnormal vaginal bleeding", raw_symptom_text: "Abnormal vaginal bleeding", condition: "Abruptio Placenta", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0007", symptom: "Abdominal pain in pregnancy", raw_symptom_text: "Abdominal pain in pregnancy <char> tender uterus", condition: "Abruptio Placenta", attributes: { char: "tender uterus" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0008", symptom: "Cough", raw_symptom_text: "Cough <since> 5 day to 14 days", condition: "Acute bronchitis", attributes: { since: "5 day to 14 days" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0009", symptom: "Cough", raw_symptom_text: "Cough <since> more than 2 week", condition: "Acute bronchitis", attributes: { since: "more than 2 week" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0010", symptom: "Cough", raw_symptom_text: "Cough <char> productive cough <char> yellow sputum", condition: "Acute bronchitis", attributes: { char: "yellow sputum" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0011", symptom: "Fever", raw_symptom_text: "Fever", condition: "Acute bronchitis", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0012", symptom: "Cough", raw_symptom_text: "Cough <char> productive cough <char> green sputum", condition: "Acute bronchitis", attributes: { char: "green sputum" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0013", symptom: "Chest pain", raw_symptom_text: "Chest pain", condition: "Acute bronchitis", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0014", symptom: "Breathlessness", raw_symptom_text: "Breathlessness", condition: "Acute bronchitis", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0015", symptom: "Wheezing", raw_symptom_text: "Wheezing", condition: "Acute bronchitis", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0016", symptom: "Throat pain", raw_symptom_text: "Throat pain", condition: "Acute bronchitis", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0017", symptom: "Chest pain", raw_symptom_text: "Chest pain <severity> severe", condition: "Acute myocardial infarction", attributes: { severity: "severe" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0018", symptom: "Chest discomfort", raw_symptom_text: "Chest discomfort <char> crushing pain", condition: "Acute myocardial infarction", attributes: { char: "crushing pain" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0019", symptom: "Breathlessness", raw_symptom_text: "Breathlessness <agg by> exertion", condition: "Acute myocardial infarction", attributes: { agg: "exertion" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0020", symptom: "Syncope", raw_symptom_text: "Syncope", condition: "Acute myocardial infarction", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0021", symptom: "Diarrhea", raw_symptom_text: "Diarrhea <char> watery", condition: "Acute gastroenteritis", attributes: { char: "watery" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0022", symptom: "Dehydration", raw_symptom_text: "Dehydration", condition: "Acute gastroenteritis", attributes: {}, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0023", symptom: "Abdominal pain", raw_symptom_text: "Abdominal pain <char> severe epigastric pain", condition: "Acute pancreatitis", attributes: { char: "severe epigastric pain" }, source: "EkaCare/BODHI-S" },
+            { id: "BODHI-0024", symptom: "Jaundice", raw_symptom_text: "Jaundice", condition: "Acute cholecystitis", attributes: {}, source: "EkaCare/BODHI-S" }
+          ];
+        }
+
+        const tx = this.db.transaction('medical_knowledge', 'readwrite');
+        const store = tx.objectStore('medical_knowledge');
+        for (const item of kbData) {
+          store.put(item);
+        }
+      }
+    } catch (err) {
+      console.warn('[IndexedDB] BODHI-S Seeding note:', err);
+    }
+  }
+
+  async getAllMedicalKnowledge() {
+    await this.init();
+    return new Promise((resolve, reject) => {
+      const tx = this.db.transaction('medical_knowledge', 'readonly');
+      const req = tx.objectStore('medical_knowledge').getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async searchMedicalKnowledge(queryText) {
+    if (!queryText || !queryText.trim()) return [];
+    const all = await this.getAllMedicalKnowledge();
+    const q = queryText.toLowerCase().trim();
+
+    return all.filter(k => {
+      const symMatch = (k.symptom || '').toLowerCase().includes(q);
+      const rawMatch = (k.raw_symptom_text || '').toLowerCase().includes(q);
+      const condMatch = (k.condition || '').toLowerCase().includes(q);
+      return symMatch || rawMatch || condMatch;
     });
   }
 
@@ -514,6 +603,7 @@ class OneHealthDB {
     const alerts = await this.getAlerts();
     const docs = await this.getAllDoctors();
     const consults = await this.getConsultationRequests();
+    const kb = await this.getAllMedicalKnowledge();
     return {
       exported_at: new Date().toISOString(),
       app: "ONEHEALTH_AI_STANDALONE",
@@ -521,7 +611,8 @@ class OneHealthDB {
       cases: cases,
       alerts: alerts,
       doctors: docs,
-      consultations: consults
+      consultations: consults,
+      bodhi_s_knowledge: kb
     };
   }
 

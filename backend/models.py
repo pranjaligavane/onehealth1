@@ -78,19 +78,58 @@ class OutbreakAlert(Base):
     title = Column(String(150), nullable=False)
     disease = Column(String(100), nullable=False)
     target_group = Column(String(50), nullable=False) # Human, Cattle, Poultry, etc.
-    village = Column(String(100), nullable=False, index=True)
-    severity = Column(String(20), default="WARNING") # INFO, WARNING, CRITICAL
+    village = Column(String(100), nullable=False)
+    severity = Column(String(20), default="WARNING") # WARNING, CRITICAL, RESOLVED
     description = Column(Text, nullable=False)
     precautions = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class DoctorProfile(Base):
+    __tablename__ = "doctor_profiles"
+
+    id = Column(String(50), primary_key=True, index=True) # e.g. DOC-001 or VET-001
+    role = Column(String(20), default="doctor") # doctor, vet
+    name = Column(String(100), nullable=False)
+    title = Column(String(100), nullable=False)
+    medical_reg_no = Column(String(50), nullable=True)
+    education = Column(String(200), nullable=False)
+    experience_years = Column(Integer, default=5)
+    specialization = Column(String(150), nullable=True)
+    consultation_fee = Column(String(100), nullable=False)
+    clinic_name = Column(String(150), nullable=False)
+    village = Column(String(100), nullable=False, index=True)
+    pincode = Column(String(10), default="423601")
+    address = Column(Text, nullable=False)
+    phone = Column(String(30), nullable=False)
+    whatsapp = Column(String(30), nullable=True)
+    opd_timings = Column(String(150), nullable=False)
+    languages = Column(String(150), default="Marathi, Hindi, English")
+    facilities = Column(Text, nullable=True)
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)
+    availability_state = Column(String(20), default="AVAILABLE")
+    last_status_time = Column(String(50), nullable=True)
+    verified = Column(Boolean, default=True)
+
+class ClinicalKnowledge(Base):
+    __tablename__ = "clinical_knowledge"
+
+    id = Column(String(50), primary_key=True, index=True) # e.g. BODHI-0001
+    symptom = Column(String(200), nullable=False, index=True)
+    raw_symptom_text = Column(Text, nullable=True)
+    condition = Column(String(200), nullable=False, index=True)
+    attributes = Column(JSON, nullable=True)
+    source = Column(String(100), default="EkaCare/BODHI-S")
+    verified = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class SyncLog(Base):
     __tablename__ = "sync_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    client_device_id = Column(String(100), nullable=True)
-    sync_count = Column(Integer, default=0)
-    synced_at = Column(DateTime, default=datetime.datetime.utcnow)
-    status = Column(String(30), default="success")
-    details = Column(JSON, nullable=True)
+    device_id = Column(String(100), nullable=True)
+    cases_synced_count = Column(Integer, default=0)
+    client_timestamp = Column(DateTime, nullable=True)
+    server_timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    status = Column(String(30), default="SUCCESS")

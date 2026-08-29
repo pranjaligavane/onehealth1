@@ -1,0 +1,1218 @@
+[
+  {
+    "id": "BODHI-0001",
+    "condition": "Abruptio Placenta",
+    "symptom_raw": "Abdominal pain in pregnancy",
+    "base_symptom": "Abdominal pain in pregnancy",
+    "qualifiers": {},
+    "specialty": "Obstetrics & Gynecology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Premature separation of placenta from uterine wall during pregnancy, presenting with abdominal pain and bleeding.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0002",
+    "condition": "Abruptio Placenta",
+    "symptom_raw": "Abdominal pain in pregnancy <severity> severe",
+    "base_symptom": "Abdominal pain in pregnancy",
+    "qualifiers": {
+      "severity": "severe"
+    },
+    "specialty": "Obstetrics & Gynecology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Premature separation of placenta from uterine wall during pregnancy, presenting with abdominal pain and bleeding.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0003",
+    "condition": "Abruptio Placenta",
+    "symptom_raw": "Back pain",
+    "base_symptom": "Back pain",
+    "qualifiers": {},
+    "specialty": "Obstetrics & Gynecology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Premature separation of placenta from uterine wall during pregnancy, presenting with abdominal pain and bleeding.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0004",
+    "condition": "Abruptio Placenta",
+    "symptom_raw": "Dizziness",
+    "base_symptom": "Dizziness",
+    "qualifiers": {},
+    "specialty": "Obstetrics & Gynecology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Premature separation of placenta from uterine wall during pregnancy, presenting with abdominal pain and bleeding.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0005",
+    "condition": "Abruptio Placenta",
+    "symptom_raw": "Reduced fetal movement",
+    "base_symptom": "Reduced fetal movement",
+    "qualifiers": {},
+    "specialty": "Obstetrics & Gynecology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Premature separation of placenta from uterine wall during pregnancy, presenting with abdominal pain and bleeding.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0006",
+    "condition": "Abruptio Placenta",
+    "symptom_raw": "Abnormal vaginal bleeding",
+    "base_symptom": "Abnormal vaginal bleeding",
+    "qualifiers": {},
+    "specialty": "Obstetrics & Gynecology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Premature separation of placenta from uterine wall during pregnancy, presenting with abdominal pain and bleeding.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0007",
+    "condition": "Abruptio Placenta",
+    "symptom_raw": "Abdominal pain in pregnancy <char> tender uterus",
+    "base_symptom": "Abdominal pain in pregnancy",
+    "qualifiers": {
+      "char": "tender uterus"
+    },
+    "specialty": "Obstetrics & Gynecology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Premature separation of placenta from uterine wall during pregnancy, presenting with abdominal pain and bleeding.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0008",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough <since> 5 day to 14 days",
+    "base_symptom": "Cough",
+    "qualifiers": {
+      "since": "5 day to 14 days"
+    },
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0009",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough <since> more than 2 week",
+    "base_symptom": "Cough",
+    "qualifiers": {
+      "since": "more than 2 week"
+    },
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0010",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough <char> productive cough <char> yellow sputum",
+    "base_symptom": "Cough",
+    "qualifiers": {
+      "char": "yellow sputum"
+    },
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0011",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Fever",
+    "base_symptom": "Fever",
+    "qualifiers": {},
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0012",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough <char> productive cough",
+    "base_symptom": "Cough",
+    "qualifiers": {
+      "char": "productive cough"
+    },
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0013",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough <char> productive cough <char> green sputum",
+    "base_symptom": "Cough",
+    "qualifiers": {
+      "char": "green sputum"
+    },
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0014",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough",
+    "base_symptom": "Cough",
+    "qualifiers": {},
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0015",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Chest pain",
+    "base_symptom": "Chest pain",
+    "qualifiers": {},
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0016",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Breathlessness",
+    "base_symptom": "Breathlessness",
+    "qualifiers": {},
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0017",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Wheezing",
+    "base_symptom": "Wheezing",
+    "qualifiers": {},
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0018",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough <pattern> Several episodes in last 3 months",
+    "base_symptom": "Cough",
+    "qualifiers": {
+      "pattern": "Several episodes in last 3 months"
+    },
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0019",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Cough <char> productive cough <char> blood stained",
+    "base_symptom": "Cough",
+    "qualifiers": {
+      "char": "blood stained"
+    },
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0020",
+    "condition": "Acute bronchitis",
+    "symptom_raw": "Throat pain",
+    "base_symptom": "Throat pain",
+    "qualifiers": {},
+    "specialty": "Pulmonology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Acute inflammation of bronchial airways with persistent productive cough, wheezing, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0021",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain <loc> upper abdomen <loc> epigastric",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "epigastric"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0022",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Fever <onset> sudden onset",
+    "base_symptom": "Fever",
+    "qualifiers": {
+      "onset": "sudden onset"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0023",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Jaundice",
+    "base_symptom": "Jaundice",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0024",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Fever",
+    "base_symptom": "Fever",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0025",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Vomit",
+    "base_symptom": "Vomit",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0026",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain <severity> severe",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "severity": "severe"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0027",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Nausea",
+    "base_symptom": "Nausea",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0028",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Malaise",
+    "base_symptom": "Malaise",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0029",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain <onset> sudden onset",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "onset": "sudden onset"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0030",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Fatigue",
+    "base_symptom": "Fatigue",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0031",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain <loc> upper abdomen <loc> upper right quadrant",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "upper right quadrant"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0032",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain <pain> colicky pain",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "pain": "colicky pain"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0033",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain <loc> upper abdomen",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "upper abdomen"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0034",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain <radiate> to right shoulder or shoulder blade",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "radiate": "to right shoulder or shoulder blade"
+    },
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0035",
+    "condition": "Acute cholecystitis",
+    "symptom_raw": "Abdominal pain",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Surgery",
+    "base_risk": "ORANGE",
+    "condition_description": "Acute inflammation of gallbladder characterized by upper right quadrant abdominal pain, fever, and jaundice.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0036",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal pain <loc> diffuse",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "diffuse"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0037",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Diarrhea <char> blood in stool",
+    "base_symptom": "Diarrhea",
+    "qualifiers": {
+      "char": "blood in stool"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0038",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Malaise",
+    "base_symptom": "Malaise",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0039",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Diarrhea <agg by> on food intake",
+    "base_symptom": "Diarrhea",
+    "qualifiers": {
+      "agg by": "on food intake"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0040",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal pain",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0041",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Diarrhea",
+    "base_symptom": "Diarrhea",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0042",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal bloating",
+    "base_symptom": "Abdominal bloating",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0043",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal pain <pain> crampy pain",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "pain": "crampy pain"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0044",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Vomit",
+    "base_symptom": "Vomit",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0045",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal pain <loc> lower abdomen <loc> lower right quadrant",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "lower right quadrant"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0046",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal pain <pain> colicky pain",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "pain": "colicky pain"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0047",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal pain <loc> lower abdomen",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "lower abdomen"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0048",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Vomit <char> nausea present",
+    "base_symptom": "Vomit",
+    "qualifiers": {
+      "char": "nausea present"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0049",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Diarrhea <char> rice watery stool",
+    "base_symptom": "Diarrhea",
+    "qualifiers": {
+      "char": "rice watery stool"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0050",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Fever",
+    "base_symptom": "Fever",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0051",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Nausea",
+    "base_symptom": "Nausea",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0052",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Vomit <char> billious vomit",
+    "base_symptom": "Vomit",
+    "qualifiers": {
+      "char": "billious vomit"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0053",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Abdominal pain <onset> sudden onset",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "onset": "sudden onset"
+    },
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0054",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Dehydration",
+    "base_symptom": "Dehydration",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0055",
+    "condition": "Acute gastroenteritis",
+    "symptom_raw": "Fatigue",
+    "base_symptom": "Fatigue",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / General Medicine",
+    "base_risk": "YELLOW",
+    "condition_description": "Inflammation of gastrointestinal tract causing watery diarrhea, vomiting, diffuse pain, and dehydration risk.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0056",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Breathlessness <agg by> exertion or exercise",
+    "base_symptom": "Breathlessness",
+    "qualifiers": {
+      "agg by": "exertion or exercise"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0057",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Sweating attack",
+    "base_symptom": "Sweating attack",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0058",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <agg by> exertion or exercise",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "agg by": "exertion or exercise"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0059",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <lasts> 1 hour to 8 hour",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "lasts": "1 hour to 8 hour"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0060",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <onset> sudden onset",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "onset": "sudden onset"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0061",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <loc> substernal",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "loc": "substernal"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0062",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Breathlessness <severity> severe (Dyspnoea, class IV)",
+    "base_symptom": "Breathlessness",
+    "qualifiers": {
+      "severity": "severe (Dyspnoea, class IV)"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0063",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Breathlessness",
+    "base_symptom": "Breathlessness",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0064",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Vomit <char> nausea present",
+    "base_symptom": "Vomit",
+    "qualifiers": {
+      "char": "nausea present"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0065",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <char> pressure in chest",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "char": "pressure in chest"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0066",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <severity> severe",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "severity": "severe"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0067",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <loc> retrosternal",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "loc": "retrosternal"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0068",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <pain> sharp or stabbing pain",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "pain": "sharp or stabbing pain"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0069",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <radiate> to between shoulder blades",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "radiate": "to between shoulder blades"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0070",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <lasts> less than 1 hour",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "lasts": "less than 1 hour"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0071",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Breathlessness <onset> sudden onset",
+    "base_symptom": "Breathlessness",
+    "qualifiers": {
+      "onset": "sudden onset"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0072",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <radiate> to jaw",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "radiate": "to jaw"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0073",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain",
+    "base_symptom": "Chest pain",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0074",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Nausea",
+    "base_symptom": "Nausea",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0075",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "High blood pressure",
+    "base_symptom": "High blood pressure",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0076",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Numbness",
+    "base_symptom": "Numbness",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0077",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <loc> left sided",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "loc": "left sided"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0078",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Breathlessness <severity> moderate (Dyspnoea, class III)",
+    "base_symptom": "Breathlessness",
+    "qualifiers": {
+      "severity": "moderate (Dyspnoea, class III)"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0079",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Palpitations",
+    "base_symptom": "Palpitations",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0080",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest discomfort",
+    "base_symptom": "Chest discomfort",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0081",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Cholesterol level raised above normal",
+    "base_symptom": "Cholesterol level raised above normal",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0082",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <loc> diffused",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "loc": "diffused"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0083",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Vomit",
+    "base_symptom": "Vomit",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0084",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Low blood pressure",
+    "base_symptom": "Low blood pressure",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0085",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <pain> squeezing pain",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "pain": "squeezing pain"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0086",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Syncope",
+    "base_symptom": "Syncope",
+    "qualifiers": {},
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0087",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <radiate> to arm or shoulder",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "radiate": "to arm or shoulder"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0088",
+    "condition": "Acute myocardial infarction",
+    "symptom_raw": "Chest pain <radiate> radiating to neck",
+    "base_symptom": "Chest pain",
+    "qualifiers": {
+      "radiate": "radiating to neck"
+    },
+    "specialty": "Cardiology / Emergency Care",
+    "base_risk": "RED",
+    "condition_description": "Coronary artery occlusion causing myocardial ischemia, severe crushing chest pain, dyspnea, and diaphoresis.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0089",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <radiate> to between shoulder blades",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "radiate": "to between shoulder blades"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0090",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <loc> central abdomen",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "central abdomen"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0091",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <rel by> on local pressure",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "rel by": "on local pressure"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0092",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Vomit",
+    "base_symptom": "Vomit",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0093",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <since> 1 day to 7 days",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "since": "1 day to 7 days"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0094",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <radiate> to lower back",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "radiate": "to lower back"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0095",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <rel by> on bending forward",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "rel by": "on bending forward"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0096",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <since> less than 1 day",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "since": "less than 1 day"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0097",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Vomit <char> bloody in vomit",
+    "base_symptom": "Vomit",
+    "qualifiers": {
+      "char": "bloody in vomit"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0098",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Jaundice",
+    "base_symptom": "Jaundice",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0099",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Black tarry stool",
+    "base_symptom": "Black tarry stool",
+    "qualifiers": {},
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  },
+  {
+    "id": "BODHI-0100",
+    "condition": "Acute pancreatitis",
+    "symptom_raw": "Abdominal pain <loc> central abdomen <loc> left flank",
+    "base_symptom": "Abdominal pain",
+    "qualifiers": {
+      "loc": "left flank"
+    },
+    "specialty": "Gastroenterology / Critical Care",
+    "base_risk": "ORANGE",
+    "condition_description": "Sudden pancreatic inflammation with severe epigastric pain radiating to the back, nausea, and fever.",
+    "source": "EkaCare/BODHI-S"
+  }
+]

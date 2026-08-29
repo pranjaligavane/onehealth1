@@ -3,13 +3,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.database import engine, Base
-from backend.routers import cases, sync, professionals, analytics
-from backend.seed_data import seed
+from backend.routers import cases, sync, professionals, analytics, knowledge
+from backend.seed import seed_database
 
 # Create database tables and seed sample data
 Base.metadata.create_all(bind=engine)
 try:
-    seed()
+    seed_database()
 except Exception as e:
     print(f"Seed note: {e}")
 
@@ -33,6 +33,7 @@ app.include_router(cases.router)
 app.include_router(sync.router)
 app.include_router(professionals.router)
 app.include_router(analytics.router)
+app.include_router(knowledge.router)
 
 # Mount Static Frontend
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
