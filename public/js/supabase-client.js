@@ -4,10 +4,18 @@
  * profile sync, and real-time data subscriptions.
  */
 
+// ---------------------------------------------------------------------------
+// Project defaults — baked in at build time (anon key is safe to expose)
+// Override via the ⚙ Settings dialog if you use a different project.
+// ---------------------------------------------------------------------------
+const _SUPABASE_DEFAULT_URL = 'https://axavjvbcicwdyhosjroj.supabase.co';
+const _SUPABASE_DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4YXZqdmJjaWN3ZHlob3Nqcm9qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODA4MDQsImV4cCI6MjEwMzU1NjgwNH0.bKkvWZg0Lo-wCOw7vhGIScB2R9TfZQSzYnwrqMr3cEU';
+
 class OneHealthSupabaseClient {
   constructor() {
-    this.supabaseUrl  = localStorage.getItem('onehealth_supabase_url')  || null;
-    this.supabaseKey  = localStorage.getItem('onehealth_supabase_key')  || null;
+    // Use stored override if available, otherwise fall back to project defaults
+    this.supabaseUrl  = localStorage.getItem('onehealth_supabase_url')  || _SUPABASE_DEFAULT_URL;
+    this.supabaseKey  = localStorage.getItem('onehealth_supabase_key')  || _SUPABASE_DEFAULT_KEY;
     this.client       = null;
     this.currentUser  = null;   // { id, email, name, role, ... }
     this.session      = null;   // Supabase session object

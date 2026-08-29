@@ -9,3 +9,4 @@ venv/
 *.db
 .DS_Store
 Thumbs.db
+.env
