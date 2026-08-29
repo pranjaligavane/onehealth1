@@ -59,7 +59,9 @@
         <button class="auth-settings-btn" onclick="window.oneHealthApp.navigateTo('resilience')" title="System Diagnostics & Resilience Engine">🛡️</button>
 
         <!-- Trust & Verification ("The Bad Reading") -->
-        <button class="auth-settings-btn" onclick="window.oneHealthApp.navigateTo('trust_verify')" title="Verify Health Claims & Fight Misinformation" style="background:rgba(15,118,110,0.12); color:#0f766e; font-weight:700;">🔍 Verify Claim</button>
+        <button class="header-trust-btn" onclick="window.oneHealthApp.navigateTo('trust_verify')" title="Verify Health Claims & Fight Misinformation">
+          🛡️ <span>Verify Claim</span>
+        </button>
 
         <button id="btnSwitchRole" class="role-badge-btn" onclick="window.oneHealthApp.openRoleModal()" title="Switch Role (Doctor / Vet / Patient)">
           <span id="roleBadgeIcon">👤</span>
@@ -233,13 +235,24 @@
       </div>
 
       <!-- Quick Action Banner for Patient -->
-      <div id="patientQuickBanner" class="card-box" style="border-left: 4px solid var(--secondary); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div id="patientQuickBanner" class="card-box" style="border-left: 4px solid var(--secondary); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
         <div>
           <h4 style="font-size:15px; font-weight:800; color:var(--secondary);" data-i18n="patient_banner_title">📍 Need a Doctor or Vet in your Area?</h4>
           <p style="font-size:13px; color:var(--text-muted);" data-i18n="patient_banner_desc">View education, consultation fee, OPD timings, and call verified doctors in Kopargaon, Pohegaon, Dhamori, & nearby villages.</p>
         </div>
         <button class="btn btn-secondary btn-sm" onclick="window.oneHealthApp.navigateTo('doctors')">
           <span data-i18n="btn_find_nearby_docs">🔍 Find Nearby Doctors ➔</span>
+        </button>
+      </div>
+
+      <!-- Trust & Verification Fact-Check Banner -->
+      <div class="card-box" style="border-left: 4px solid #0f766e; background: linear-gradient(135deg, #f0fdfa, #ccfbf1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+        <div>
+          <h4 style="font-size:15px; font-weight:800; color:#0f766e;">🛡️ Verify a Health Claim or WhatsApp Advice</h4>
+          <p style="font-size:13px; color:#334155; margin:2px 0 0;">Received a viral cure claim or medical message? Fact-check it against MoHFW, ICMR, AIIMS & WHO registries.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="window.oneHealthApp.navigateTo('trust_verify')" style="font-weight:800; background:#0f766e; border-color:#0f766e;">
+          🔍 Verify Health Claim ➔
         </button>
       </div>
 

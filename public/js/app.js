@@ -53,6 +53,11 @@ class OneHealthApp {
       setTimeout(() => window.oneHealthResilience.runIntegrityCheck(), 1200);
     }
 
+    // 5.6 Initialize Information Trust & Verification Engine ("The Bad Reading")
+    if (window.oneHealthTrust) {
+      await window.oneHealthTrust.init();
+    }
+
     // 6. Check Auth State: If authenticated -> Go to Doctor/Patient dashboard; Else -> Welcome Login View
     const isAuth = window.oneHealthSupabase && window.oneHealthSupabase.isAuthenticated();
     if (isAuth) {
@@ -156,6 +161,10 @@ class OneHealthApp {
           <span class="nav-icon">📂</span>
           <span>${t('nav_cases')}</span>
         </button>
+        <button class="nav-item" data-view="trust_verify" onclick="window.oneHealthApp.navigateTo('trust_verify')">
+          <span class="nav-icon">🛡️</span>
+          <span>Verify Claim</span>
+        </button>
         <button class="nav-item" data-view="clinic_profile" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
           <span class="nav-icon">📍</span>
           <span>${t('nav_clinic_profile')}</span>
@@ -174,6 +183,10 @@ class OneHealthApp {
         <button class="nav-item" data-view="cases" onclick="window.oneHealthApp.navigateTo('cases')">
           <span class="nav-icon">📂</span>
           <span>${t('nav_cases')}</span>
+        </button>
+        <button class="nav-item" data-view="trust_verify" onclick="window.oneHealthApp.navigateTo('trust_verify')">
+          <span class="nav-icon">🛡️</span>
+          <span>Verify Claim</span>
         </button>
         <button class="nav-item" data-view="clinic_profile" onclick="window.oneHealthApp.navigateTo('clinic_profile')">
           <span class="nav-icon">📍</span>

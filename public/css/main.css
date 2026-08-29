@@ -105,13 +105,50 @@ body {
 
 .brand-icon {
   font-size: 24px;
-  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
   width: 38px;
   height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+}
+
+.auth-settings-btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.auth-settings-btn:hover { background: rgba(255,255,255,0.22); }
+
+.header-trust-btn {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  padding: 4px 10px;
+  height: 32px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.header-trust-btn:hover {
+  background: #ffffff;
+  color: #0f766e;
+  transform: translateY(-1px);
 }
 
 .brand-title {
@@ -2075,6 +2112,12 @@ body {
   align-items: center;
   gap: 6px;
   padding: 14px 8px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-color);
+  background: #f8fafc;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
   border-radius: 12px;
   border: 1.5px solid var(--border-color);
   background: #f8fafc;

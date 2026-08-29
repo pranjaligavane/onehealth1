@@ -348,6 +348,7 @@ class OneHealthTrustEngine {
    * tracks potential coordinated burst patterns, and produces an explainable trust report.
    */
   async verifyClaim(rawText, metadata = {}) {
+    await this.init();
     const text = (rawText || '').trim();
     if (!text) {
       throw new Error('Please enter a claim or message to verify.');
